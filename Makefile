@@ -1,6 +1,6 @@
 # Makefile : Compile cellular.cc
 
-SOURCES=car.cc track.cc nash.cc
+SOURCES=car.cc track.cc nash.cc simple_car_factory.cc csv_car_factory.cc
 
 all:	${SOURCES}
 	g++ -O4 -o nash ${SOURCES} -lga

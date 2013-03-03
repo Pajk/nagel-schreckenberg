@@ -1,31 +1,56 @@
 #include <cstdlib>
 #include <iostream>
+#include <ctime>
 
 #include "track.h"
 #include "car.h"
+#include "car_factory.h"
 
-Track::Track(int length) {
+Track::Track(CarFactory *car_factory, int length) {
   
   this->length = length;
   this->number_of_cars = 0;
   this->sim_time = 0;
-  this->left_car = NULL;
-  this->car = NULL;  
+  this->last_car = NULL;
+  this->car = NULL;
+  this->car_factory = car_factory;
+  this->start_time = NULL;
+  this->next_car = NULL;
+  
+  next_car = car_factory->nextCar();
+  time_offset = next_car->getTimeIn();
+  next_car->setTimeIn(0);
 }
 
 Track::~Track() {
-  if (left_car) {
-    delete left_car;
+ 
+  if (next_car) {
+    delete next_car;
   }
+ 
+  if (last_car) {
+    delete last_car;
+  }
+
+  if (car_factory) {
+    delete car_factory;
+  }
+
 }
 
 void Track::step() {
   
-  if (!left_car || (left_car->getPosition() > 2)) {
-    left_car = new Car(++number_of_cars, rand()%3, left_car, this);
+  if (next_car && (!last_car || (last_car->getPosition() > 2))) {
+    
+    if (next_car->getTimeIn() <= sim_time) {
+      next_car->start(this, last_car);
+      last_car = next_car;
+      next_car = NULL;
+      number_of_cars++;
+    }
   }
 
-  car = left_car;
+  car = last_car;
 
   while (car) {
     car->move();
@@ -33,5 +58,17 @@ void Track::step() {
   }
 
   sim_time++;
+  
+  if (!next_car) {
+    next_car = car_factory->nextCar();
+    if (next_car) {
+      next_car->setTimeIn(next_car->getTimeIn() - time_offset);
+    }
+  }
+}
+
+bool Track::live() {
+  
+  return (next_car || last_car) ? true : false;
 }
 

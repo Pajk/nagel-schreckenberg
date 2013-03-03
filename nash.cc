@@ -5,6 +5,8 @@
 
 #include "track.h"
 #include "car.h"
+#include "simple_car_factory.h"
+#include "csv_car_factory.h"
 
 #ifdef GUI
 #include <allegro.h>
@@ -15,29 +17,28 @@ BITMAP *buffer;
 void initAllegro(int);
 void deinitAllegro();
 void sigHandler(int s);
+void setupSignalHandler();
 
 Track *track;
 
 int main(int argc, char **argv) {
     
   track = NULL;
-  struct sigaction sigIntHandler;
 
-  sigIntHandler.sa_handler = sigHandler;
-  sigemptyset(&sigIntHandler.sa_mask);
-  sigIntHandler.sa_flags = 0;
-
-  sigaction(SIGINT, &sigIntHandler, NULL);
-
+  setupSignalHandler();
+  
   srand(time(NULL));  
 
-  int track_length = 1430;
+  const int track_length = 5349/3;
+
+  //CarFactory *car_factory = new SimpleCarFactory();
+  CarFactory *car_factory = new CsvCarFactory("samples.csv", ',');
   
   #ifdef GUI
   initAllegro(track_length);
   #endif
 
-  track = new Track(track_length);
+  track = new Track(car_factory, track_length);
   
   #ifdef GUI
   while (!key[KEY_ESC]) {
@@ -48,7 +49,7 @@ int main(int argc, char **argv) {
   }
   #else
   //for (int i=0; i< 1000; i++) {
-  while(1) {
+  while(track->live()) {
     track->step();
   }
   #endif
@@ -96,3 +97,12 @@ void sigHandler(int s) {
   }
   exit(0);
 }
+
+void setupSignalHandler() {
+  struct sigaction sigIntHandler;
+  sigIntHandler.sa_handler = sigHandler;
+  sigemptyset(&sigIntHandler.sa_mask);
+  sigIntHandler.sa_flags = 0;
+  sigaction(SIGINT, &sigIntHandler, NULL);
+}
+
