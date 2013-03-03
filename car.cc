@@ -1,10 +1,13 @@
 #include <iostream>
 #include <cstdlib>
-#include <allegro.h>
 
 #include "car.h"
 
+#ifdef GUI
+#include <allegro.h>
+
 extern BITMAP *buffer;
+#endif
 
 Car::Car(int id, int car_class, Car *car_in_front, Track *track) {
 
@@ -45,6 +48,7 @@ Car::~Car() {
   
   if (car_in_front) {
     car_in_front->setCarBehind(NULL);
+    delete car_in_front;
   }
   
   if (car_behind) {
@@ -59,26 +63,32 @@ Car::~Car() {
 void Car::move() {
 
   old_position = position;
+  int dist = getDistance();
 
-  if (cur_speed < max_speed) {
+  // 1) akceleracce
+  if (cur_speed < max_speed && dist > cur_speed + 1) {
     cur_speed++;
   }
 
-  int dist = getDistance();
+  // 2) zpomaleni
   if (cur_speed >= dist) {
     cur_speed = dist - 1;
   }
 
+  // 3) randomizace
   if ((rand() < RAND_MAX*p) && (cur_speed > 0)) {
     cur_speed--;
   }
 
+  // 4) pohyb auta
   position += cur_speed;
 
   if (position > track->getLength()) {
     delete this;
+  #ifdef GUI
   } else {
     line(buffer, position, 0, position, 50, makecol(255,0,0));
+  #endif
   }
 }
 
