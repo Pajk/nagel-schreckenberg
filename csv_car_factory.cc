@@ -36,7 +36,9 @@ Car *CsvCarFactory::nextCar() {
     struct tm tm_in;
     time_t time_in;
 
-    Car *car = new Car(current_id++, atoi(line.at(5).c_str()));
+    int car_class = atoi(line.at(5).c_str());
+
+    Car *car = new Car(current_id++, car_class, config);
     
     strptime(line.at(2).c_str(), "%d-%m-%Y %H:%M:%S", &tm_in);
 
@@ -53,16 +55,18 @@ Car *CsvCarFactory::nextCar() {
     car->setExpectedTime(atoi(line.at(3).c_str()));
 
     return car;
+
   } else {
     
     return NULL;
   }
 }
 
-CsvCarFactory::CsvCarFactory(const char *file_name, const char column_separator) {
+CsvCarFactory::CsvCarFactory(const char *file_name, Config *config, const char column_separator) {
   
   current_id = 1;
   this->column_separator = column_separator;
+  this->config = config;
   file.open(file_name);
 }
 

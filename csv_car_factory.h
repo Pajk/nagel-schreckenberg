@@ -5,7 +5,6 @@
 #include <vector>
 #include <string>
 
-
 #include "car_factory.h"
 
 class Car;
@@ -18,9 +17,11 @@ class CsvCarFactory : public CarFactory {
 
   long current_id;
 
+  Config *config;
+
   public:
 
-    CsvCarFactory(const char *file_name, const char column_separator = ',');
+    CsvCarFactory(const char *file_name, Config *config, const char column_separator = ',');
 
     std::vector<std::string> nextLine();
     

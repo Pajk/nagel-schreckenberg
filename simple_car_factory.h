@@ -8,9 +8,10 @@ class Car;
 class SimpleCarFactory : public CarFactory {
 
   int current_id;
+  Config *config;
 
   public:
-    SimpleCarFactory() : current_id(1) {};
+    SimpleCarFactory(Config *config) : current_id(1), config(config) {};
 
     Car *nextCar();
 

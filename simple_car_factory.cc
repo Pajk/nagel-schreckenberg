@@ -5,7 +5,8 @@
 
 Car *SimpleCarFactory::nextCar() {
 
-  Car *car = new Car(current_id++, rand()%3);
+  int car_class = rand()%(config->getNumberOfCarTypes()-1);
+  Car *car = new Car(current_id++, car_class, config);
 
   return car;
 }

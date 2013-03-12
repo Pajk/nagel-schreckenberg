@@ -9,10 +9,11 @@
 extern BITMAP *buffer;
 #endif
 
-Car::Car(long id, int car_class) {
+Car::Car(long id, int car_class, Config *config) {
 
   this->id = id;
   this->car_class = car_class;
+  this->config = config;
 
   this->car_in_front = NULL;
   this->car_behind = NULL;
@@ -23,41 +24,18 @@ Car::Car(long id, int car_class) {
   this->time_in = 0;
   this->current_speed = 0;
 
-  // motocykl
-  if (car_class == 0) {
-    this->max_speed = 6;
-    this->p = 0.3;
-    this->current_speed = 5;
-  // osobni automobil do 3.5 tuny
-  } else if (car_class == 1) {
-    this->max_speed = 5;
-    this->p = 0.3;
-    this->current_speed = 3;
-  // dodavka do 3.5 tuny
-  } else if (car_class == 2) {
-    this->max_speed = 4;
-    this->p = 0.5;
-    this->current_speed = 2;
-  // autobus
-  } else if (car_class == 3) {
-    this->max_speed = 4;
-    this->p = 0.5;
-    this->current_speed = 2;
-  // nakladni vozidlo do 6 tun
-  } else if (car_class == 4) {
-    this->max_speed = 3;
-    this->p = 0.3;
-    this->current_speed = 1;
-  // nakladni vozidlo na 6 tun
-  } else if (car_class == 5) {
-    this->max_speed = 3;
-    this->p = 0.5;
-    this->current_speed = 1;
-  } else {
-    this->max_speed = 5;
-    this->p = 0.3;
-    this->current_speed = 2;
-  }
+  loadCarConfig();
+}
+
+void Car::loadCarConfig() {
+
+  CarConfig c = config->getCarConfig(car_class);
+
+  slowdown_probability = c.slowdown_probability;
+  acceleration_probability = c.acceleration_probability;
+  max_speed = c.max_speed;
+  min_speed = c.min_speed;
+  current_speed = (max_speed - min_speed)/2;
 }
 
 Car::~Car() {
@@ -69,7 +47,7 @@ Car::~Car() {
 
   //std::cout << "auto " << id << " konci po " << total_time << 
   //  " na pozici " << position << " s rychlosti " << current_speed << std::endl;
-  std::cout << id << " " << total_time - expected_time << std::endl;
+  std::cout << id << total_time << " " << expected_time << " " << total_time - expected_time << std::endl;
   
   if (car_in_front) {
     car_in_front->setCarBehind(NULL);
@@ -102,8 +80,8 @@ void Car::move() {
     current_speed = dist - 1;
   }
 
-  // 3) randomizace
-  if ((rand() < RAND_MAX*p) && (current_speed > 0)) {
+  // 3) randomizace - zpomaleni
+  if ((rand() < RAND_MAX*slowdown_probability) && (current_speed > 0)) {
     current_speed--;
   }
 

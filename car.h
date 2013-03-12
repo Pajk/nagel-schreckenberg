@@ -1,30 +1,35 @@
-#ifndef _car
-#define _car
+#ifndef _CAR_H
+#define _CAR_H
 
 #include "track.h"
+#include "config.h"
 
 class Car {
 
   int id,
       max_speed,
+      min_speed,
       current_speed,
       expected_time,
       car_class,
       position,
-      old_position;
+      old_position,;
 
   long time_in;
 
-  float p;
+  float slowdown_probability,
+        acceleration_probability;
 
   Car *car_in_front,
       *car_behind;
 
   Track *track;
 
+  Config *config;
+
   public:
 
-    Car(long id, int car_class);
+    Car(long id, int car_class, Config *config);
     ~Car();
  
     int getCurrentSpeed() { return current_speed; }
@@ -48,6 +53,7 @@ class Car {
 
     void start(Track *track, Car *car_in_front);
     void move();
+    void loadCarConfig();
 };
 
 #endif

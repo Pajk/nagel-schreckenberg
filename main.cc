@@ -7,6 +7,7 @@
 #include "car.h"
 #include "simple_car_factory.h"
 #include "csv_car_factory.h"
+#include "config.h"
 
 #ifdef GUI
 #include <allegro.h>
@@ -29,11 +30,14 @@ int main(int argc, char **argv) {
   
   srand(time(NULL));  
 
-  const int track_length = 5349/3;
+  Config *config = new Config();
+  config->loadFromFile("nash.config");
 
-  //CarFactory *car_factory = new SimpleCarFactory();
-  CarFactory *car_factory = new CsvCarFactory("samples.csv", ',');
+  //CarFactory *car_factory = new SimpleCarFactory(config);
+  CarFactory *car_factory = new CsvCarFactory("samples.csv", config);
   
+  const int track_length = config->getNumberOfTrackSites();
+
   #ifdef GUI
   initAllegro(track_length);
   #endif

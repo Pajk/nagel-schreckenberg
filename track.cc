@@ -57,7 +57,7 @@ void Track::step() {
     car = car->getCarInFront();
   }
 
-  sim_time++;
+  sim_time += 1;
   
   if (!next_car) {
     next_car = car_factory->nextCar();
