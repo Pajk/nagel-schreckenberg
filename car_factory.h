@@ -10,6 +10,7 @@ class CarFactory {
   public:
 
     virtual Car *nextCar() = 0;
+    virtual ~CarFactory() {};
 
 };
 

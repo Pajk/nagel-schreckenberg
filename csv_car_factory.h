@@ -6,6 +6,7 @@
 #include <string>
 
 #include "car_factory.h"
+#include "statistics.h"
 
 class Car;
 
@@ -13,19 +14,33 @@ class CsvCarFactory : public CarFactory {
 
   char column_separator;
 
-  std::ifstream file;
-
   long current_id;
+
+  const char *file_name;
 
   Config *config;
 
+  Statistics *statistics;
+
+  std::vector<std::vector<std::string> > buffer;
+
+  std::vector<std::vector<std::string> >::iterator current_car;
+
   public:
 
-    CsvCarFactory(const char *file_name, Config *config, const char column_separator = ',');
+    CsvCarFactory(const char *file_name, Config *config = NULL, Statistics *statistics = NULL);
+    virtual ~CsvCarFactory();
 
     std::vector<std::string> nextLine();
     
     Car *nextCar();
+
+    void fillBuffer();
+
+    void resetIterator();
+
+    void setConfig(Config *config) { this->config = config; }
+    void setStatistics(Statistics *statistics) { this->statistics = statistics; }
 };
 
 #endif

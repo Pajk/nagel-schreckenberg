@@ -9,11 +9,12 @@
 extern BITMAP *buffer;
 #endif
 
-Car::Car(long id, int car_class, Config *config) {
+Car::Car(long id, int car_class, Config *config, Statistics *statistics) {
 
   this->id = id;
   this->car_class = car_class;
   this->config = config;
+  this->statistics = statistics;
 
   this->car_in_front = NULL;
   this->car_behind = NULL;
@@ -39,7 +40,7 @@ void Car::loadCarConfig() {
 }
 
 Car::~Car() {
-      
+  
   int total_time = 0;
   if (track) {
     total_time = track->getCurrentTime() - time_in;
@@ -47,13 +48,15 @@ Car::~Car() {
 
   //std::cout << "auto " << id << " konci po " << total_time << 
   //  " na pozici " << position << " s rychlosti " << current_speed << std::endl;
-  std::cout << id << total_time << " " << expected_time << " " << total_time - expected_time << std::endl;
-  
+  // std::cout << id << " " << total_time << " " << expected_time << " " << total_time - expected_time << std::endl;
+
+  statistics->logCarTime(id, total_time, expected_time);
+ 
   if (car_in_front) {
     car_in_front->setCarBehind(NULL);
     delete car_in_front;
   }
-  
+
   if (car_behind) {
     car_behind->setCarInFront(NULL);
   }
@@ -71,7 +74,9 @@ void Car::move() {
   int dist = getDistance();
 
   // 1) akceleracce
-  if (current_speed < max_speed && dist > current_speed + 1) {
+  if (rand() < RAND_MAX*acceleration_probability && current_speed < max_speed 
+    && dist > current_speed + 1) {
+
     current_speed++;
   }
 
@@ -81,7 +86,7 @@ void Car::move() {
   }
 
   // 3) randomizace - zpomaleni
-  if ((rand() < RAND_MAX*slowdown_probability) && (current_speed > 0)) {
+  if (rand() < RAND_MAX*slowdown_probability && current_speed > 0) {
     current_speed--;
   }
 

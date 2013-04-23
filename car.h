@@ -3,6 +3,7 @@
 
 #include "track.h"
 #include "config.h"
+#include "statistics.h"
 
 class Car {
 
@@ -27,11 +28,13 @@ class Car {
 
   Config *config;
 
+  Statistics *statistics;
+
   public:
 
-    Car(long id, int car_class, Config *config);
+    Car(long id, int car_class, Config *config, Statistics *statistics);
     ~Car();
- 
+
     int getCurrentSpeed() { return current_speed; }
     int getId() { return id; }
     int getMaximumSpeed() { return max_speed; }
@@ -41,7 +44,7 @@ class Car {
     Car * getCarBehind() { return car_behind; }
     int getPosition() { return position; }
     long getTimeIn() { return time_in; }
-    
+
     void setCarInFront(Car *car) { car_in_front = car; }
     void setCarBehind(Car *car) { car_behind = car; }
     void setTimeIn(long time) { time_in = time; }

@@ -8,6 +8,7 @@
 #include "simple_car_factory.h"
 #include "csv_car_factory.h"
 #include "config.h"
+#include "statistics.h"
 
 #ifdef GUI
 #include <allegro.h>
@@ -21,6 +22,9 @@ void sigHandler(int s);
 void setupSignalHandler();
 
 Track *track;
+CarFactory *car_factory;
+Statistics *statistics;
+Config *config;
 
 int main(int argc, char **argv) {
     
@@ -30,11 +34,13 @@ int main(int argc, char **argv) {
   
   srand(time(NULL));  
 
-  Config *config = new Config();
+  config = new Config();
   config->loadFromFile("nash.config");
 
+  statistics = new Statistics();
+
   //CarFactory *car_factory = new SimpleCarFactory(config);
-  CarFactory *car_factory = new CsvCarFactory("samples.csv", config);
+  car_factory = new CsvCarFactory("samples.csv", config, statistics);
   
   const int track_length = config->getNumberOfTrackSites();
 
@@ -57,9 +63,19 @@ int main(int argc, char **argv) {
     track->step();
   }
   #endif
+
+  std::cout << "mean error: " << statistics->getMeanError() << std::endl;
+  std::cout << "mean error abs: " << statistics->getMeanErrorAbs() << std::endl;
   
+  delete car_factory;
   delete track;
+  delete config;
+  delete statistics;
+
+  car_factory = NULL;
   track = NULL;
+  config = NULL;
+  statistics = NULL;
 
   #ifdef GUI
   deinitAllegro();
@@ -95,10 +111,10 @@ void deinitAllegro() {
 #endif
 
 void sigHandler(int s) {
-  std::cout << "koncim" << std::endl;
-  if (track) {
-    delete track;
-  }
+  if (car_factory) delete car_factory;
+  if (track) delete track;
+  if (config) delete config;
+  if (statistics) delete statistics;
   exit(0);
 }
 

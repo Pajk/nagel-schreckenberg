@@ -32,10 +32,6 @@ Track::~Track() {
     delete last_car;
   }
 
-  if (car_factory) {
-    delete car_factory;
-  }
-
 }
 
 void Track::step() {
@@ -52,9 +48,11 @@ void Track::step() {
 
   car = last_car;
 
+  Car *tmp_car;
   while (car) {
+    tmp_car = car->getCarInFront();
     car->move();
-    car = car->getCarInFront();
+    car = tmp_car;
   }
 
   sim_time += 1;

@@ -4,7 +4,7 @@ set(PROJECT_NAME nash)
 
 project(${PROJECT_NAME})
 
-set(SOURCES car.cc track.cc simple_car_factory.cc csv_car_factory.cc config.cc)
+set(SOURCES statistics.cc car.cc track.cc simple_car_factory.cc csv_car_factory.cc config.cc)
 set(TESTS tests/config.cc)
 
 find_package(GTest REQUIRED)
@@ -14,7 +14,10 @@ add_executable(run_tests tests.cc ${SOURCES} ${TESTS})
 target_link_libraries(run_tests ${GTEST_LIBRARIES} pthread)
 
 add_executable(${PROJECT_NAME} main.cc ${SOURCES})
-target_link_libraries(${PROJECT_NAME} ga)
+target_link_libraries(${PROJECT_NAME})
+
+add_executable(search_params search_params.cc ${SOURCES})
+target_link_libraries(search_params ga)
 
 # pokud je k dispozici knihovna allegro, prida se target gui-nash
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")

@@ -82,6 +82,12 @@ TEST (ConfigTest, LoadFromBinaryString) {
     EXPECT_EQ (test, cc);
 }
 
+TEST (ConfigTest, LoadFromString) {
+    Config config;
+    config.loadFromBinaryString("01001100111111010110111001");
+    config.print();
+}
+
 TEST (ConfigTest, LoadFromBinaryInteger) { 
 
     Config config;
@@ -100,7 +106,7 @@ TEST (ConfigTest, LoadFromBinaryInteger) {
         }
         string_config++;
     }
-    config.loadFromBinaryInteger(binary_config);
+    config.loadFromInteger(binary_config);
 
     EXPECT_EQ (8, config.getSiteLength());
     EXPECT_EQ (5400, config.getTrackLength());

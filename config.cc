@@ -143,7 +143,23 @@ void Config::loadFromBinaryString(const char *binary_string) {
   car_configs[0] = car_config; 
 }
 
-void Config::loadFromBinaryInteger(int binary_integer) {
+void Config::print() {
+
+    cout << "site length: " << site_length << endl
+         << "track length: " << track_length << endl
+         << "number of track sites: " << getNumberOfTrackSites() << endl;
+
+    for (map<int,CarConfig>::iterator it = car_configs.begin(); it != car_configs.end(); ++it) {
+        cout << "car " << it->first << ":" << endl;
+        CarConfig cc = it->second;
+        cout << "  slowdown_probability: " << cc.slowdown_probability << endl
+             << "  acceleration_probability: " << cc.acceleration_probability << endl
+             << "  max_speed: " << cc.max_speed << endl
+             << "  min_speed: " << cc.min_speed << endl;
+    }
+}
+
+void Config::loadFromInteger(int binary_integer) {
 
   int i, tmp;
 
@@ -161,6 +177,8 @@ void Config::loadFromBinaryInteger(int binary_integer) {
         tmp |= 1<<(i-15);
     }
   }
+  if (tmp > 60) tmp = 60;
+  if (tmp < 10) tmp = 10;
   car_config.slowdown_probability = float(tmp)/100.0; 
 
   for (i = 14, tmp = 0; i >= 8; i--) {
@@ -168,6 +186,8 @@ void Config::loadFromBinaryInteger(int binary_integer) {
         tmp |= 1<<(i-8);
     }
   }
+  if (tmp > 100) tmp = 100;
+  if (tmp < 10) tmp = 10;
   car_config.acceleration_probability = float(tmp)/100.0; 
 
   for (i = 7, tmp = 0; i >= 4; i--) {
@@ -175,6 +195,7 @@ void Config::loadFromBinaryInteger(int binary_integer) {
         tmp |= 1<<(i-4);
     }
   }
+  if (tmp < 2) tmp = 2;
   car_config.max_speed = tmp; 
 
   for (i = 3, tmp = 0; i >= 0; i--) {
@@ -182,7 +203,12 @@ void Config::loadFromBinaryInteger(int binary_integer) {
         tmp |= 1<<i;
     }
   }
+  if (tmp >= car_config.max_speed) {
+    tmp = car_config.max_speed - 2;
+  }
+  if (tmp < 0) tmp = 0;
   car_config.min_speed = tmp; 
+  //car_config.min_speed = 0;
 
   car_configs[0] = car_config; 
 }
