@@ -10,24 +10,27 @@ set(TESTS tests/config_test.cc tests/track_test.cc)
 add_executable(bin/${PROJECT_NAME} src/main.cc ${SOURCES})
 target_link_libraries(bin/${PROJECT_NAME})
 
-add_executable(bin/search_params src/search_params.cc ${SOURCES})
-target_link_libraries(bin/search_params ga)
-
-# pokud je k dispozici knihovna allegro, prida se target gui-nash
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
-find_package(allegro REQUIRED)
+
+find_package(GAlib)
+
+IF(GALIB_FOUND)
+  include_directories(${GALIB_INCLUDE_DIRS})
+  add_executable(bin/search_params src/search_params.cc ${SOURCES})
+  target_link_libraries(bin/search_params ${GALIB_LIBRARIES})
+ENDIF(GALIB_FOUND)
+
+find_package(allegro)
 
 IF(ALLEGRO_FOUND)
-    LINK_DIRECTORIES(${LINK_DIRECTORIES})
-    INCLUDE_DIRECTORIES(${ALLEGRO_INCLUDE_DIRS} ${ALLEGRO_INCLUDE_DIR})
-
+    link_directories(${LINK_DIRECTORIES})
+    include_directories(${ALLEGRO_INCLUDE_DIRS})
     add_executable(bin/gui-${PROJECT_NAME} src/main.cc ${SOURCES})
     target_link_libraries(bin/gui-${PROJECT_NAME} ${ALLEGRO_LIBRARIES})
     set_target_properties(bin/gui-${PROJECT_NAME} PROPERTIES COMPILE_DEFINITIONS "GUI=1")
 ENDIF(ALLEGRO_FOUND)
 
-# pokud je k dispozici knihovna gtest, prida se target run_tests
-find_package(GoogleTest REQUIRED)
+find_package(GoogleTest)
 
 IF(GTEST_FOUND)
     include_directories(${GTEST_INCLUDE_DIRS})
