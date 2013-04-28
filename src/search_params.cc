@@ -9,8 +9,8 @@
 
 #include "track.h"
 #include "car.h"
-#include "simple_car_factory.h"
-#include "csv_car_factory.h"
+#include "car_factory/simple_car_factory.h"
+#include "car_factory/csv_car_factory.h"
 #include "config.h"
 
 using namespace std;
@@ -65,11 +65,11 @@ float Fitness(GAGenome& g) {
     int track_length = config->getNumberOfTrackSites();
     Track *track = new Track(car_factory, track_length);
 
-    while (track->live()) {
+    while (track->isLive()) {
         track->step();
     }
 
-    float fitness = fabs(statistics->getMeanErrorAbs());
+    float fitness = fabs(statistics->getMeanError());
 
     //statistics->print();
     cout << fitness << endl;
@@ -107,7 +107,7 @@ int main(int argc, char **argv) {
     // genom - matice parametru modelu
     GA1DBinaryStringGenome genom(26, Fitness);
 
-    car_factory = new CsvCarFactory("samples.csv");
+    car_factory = new CsvCarFactory("data/samples.csv");
 
     // nastaveni genetickych operatoru
     //genom.initializer(Initializer);
@@ -135,7 +135,7 @@ int main(int argc, char **argv) {
     ga.selector(selector);
 
     // moznost nastaveni parametru ze souboru a pres argumenty prikazove radky
-    ga.parameters("ga_params.txt", gaTrue);
+    ga.parameters("data/ga_params.txt", gaTrue);
     ga.parameters(argc,argv);
 
     // start evolucniho procesu
@@ -145,7 +145,7 @@ int main(int argc, char **argv) {
         ++ga;
 //        #ifndef TEST
         if ((ga.statistics().generation() % ga.scoreFrequency()) == 0) {
-            cout << "Generace " << ga.statistics().generation() 
+            cout << "Generace " << ga.statistics().generation()
                  << " - Nejlepsi fitness: " << ga.population().min() << endl;
         }
 //        #endif

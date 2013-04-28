@@ -6,7 +6,7 @@
 #include <fstream>
 
 #include "csv_car_factory.h"
-#include "car.h"
+#include "../car.h"
 
 using namespace std;
 
@@ -20,7 +20,7 @@ vector<string> CsvCarFactory::nextLine() {
   vector<string> car_data = *current_car;
 
   current_car++;
-  
+
   return car_data;
 }
 
@@ -29,41 +29,49 @@ Car *CsvCarFactory::nextCar() {
   // 0:data-type, 1:time out, 2:time in, 3:total time, 4:car type in, 5:car type out
   // EVCEO-EVVN,22-06-2012 04:51:16,22-06-2012 04:43:34,462,-1,2
 
+nextCar:
+
   std::vector<std::string> line = nextLine();
 
   if (line.size() == 6 && line.at(0) == "EVCEO-EVVN") {
-    
+
     struct tm tm_in;
     time_t time_in;
 
     int car_class = atoi(line.at(5).c_str());
 
     Car *car = new Car(current_id++, car_class, config, statistics);
-    
+
     strptime(line.at(2).c_str(), "%d-%m-%Y %H:%M:%S", &tm_in);
 
     tm_in.tm_isdst = -1;
-    
+
     time_in = mktime(&tm_in);
 
     if (time_in == -1) {
       std::cout << "Chyba pri cteni datumu" << std::endl;
     }
-  
+
     car->setTimeIn((long)time_in);
 
-    car->setExpectedTime(atoi(line.at(3).c_str()));
+    int expected_time = atoi(line.at(3).c_str());
+
+    if (expected_time > 1000) {
+      goto nextCar;
+    }
+
+    car->setExpectedTime(expected_time);
 
     return car;
 
   } else {
-    
+
     return NULL;
   }
 }
 
 CsvCarFactory::CsvCarFactory(const char *file_name, Config *config, Statistics *statistics) {
-  
+
   this->column_separator = column_separator;
   this->config = config;
   this->statistics = statistics;
@@ -77,6 +85,11 @@ CsvCarFactory::CsvCarFactory(const char *file_name, Config *config, Statistics *
 void CsvCarFactory::fillBuffer() {
 
   ifstream file(file_name, ifstream::in);
+
+  if (!file.good()) {
+    cout << "Cannot open samples file '" << file_name << "'." << endl;
+    exit(-1);
+  }
 
   string line;
 

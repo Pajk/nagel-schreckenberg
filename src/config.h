@@ -5,22 +5,28 @@
 #include <map>
 
 struct CarConfig {
+
+  int car_class;
   float slowdown_probability;
   float acceleration_probability;
   int max_speed;
   int min_speed;
+  int length;
+
   bool operator== (const CarConfig& cc) const {
     return cc.slowdown_probability == slowdown_probability &&
       cc.acceleration_probability == acceleration_probability &&
       cc.max_speed == max_speed &&
-      cc.min_speed == min_speed;
+      cc.min_speed == min_speed &&
+      cc.length == length;
   }
 };
 
 class Config {
-   
-  int site_length;
+
+  float site_length;
   int track_length;
+  int track_max_speed;
   int default_car;
 
   std::map <int, CarConfig> car_configs;
@@ -36,13 +42,12 @@ class Config {
 
     void print();
 
-    int getSiteLength() { return site_length; }
+    float getSiteLength() { return site_length; }
     int getTrackLength() { return track_length; }
+    int getTrackMaxSpeed() { return track_max_speed; }
     int getDefaultCar() { return default_car; }
     int getNumberOfTrackSites() { return site_length > 0 ? track_length/site_length : 1; }
     int getNumberOfCarTypes() { return car_configs.size(); }
 };
 
-
 #endif
-

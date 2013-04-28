@@ -5,8 +5,8 @@
 
 #include "track.h"
 #include "car.h"
-#include "simple_car_factory.h"
-#include "csv_car_factory.h"
+#include "car_factory/simple_car_factory.h"
+#include "car_factory/csv_car_factory.h"
 #include "config.h"
 #include "statistics.h"
 
@@ -27,55 +27,60 @@ Statistics *statistics;
 Config *config;
 
 int main(int argc, char **argv) {
-    
+
   track = NULL;
 
   setupSignalHandler();
-  
-  srand(time(NULL));  
+
+  srand(time(NULL));
 
   config = new Config();
-  config->loadFromFile("nash.config");
+  config->loadFromFile("data/nash.config");
 
   statistics = new Statistics();
 
+  bool running = true;
+
   //CarFactory *car_factory = new SimpleCarFactory(config);
-  car_factory = new CsvCarFactory("samples.csv", config, statistics);
-  
+  car_factory = new CsvCarFactory("data/samples.csv", config, statistics);
+
   const int track_length = config->getNumberOfTrackSites();
+  const int track_max_speed = config->getTrackMaxSpeed();
 
   #ifdef GUI
   initAllegro(track_length);
   #endif
 
-  track = new Track(car_factory, track_length);
-  
+  track = new Track(car_factory, track_length, track_max_speed);
+
   #ifdef GUI
   while (!key[KEY_ESC]) {
-    clear_to_color(buffer, makecol(0, 0, 0));
-    track->step();
-    blit(buffer, screen, 0, 0, 0, 0, track_length, 50);
+
+    if (running) {
+      clear_to_color(buffer, makecol(0, 0, 0));
+      track->step();
+      blit(buffer, screen, 0, 0, 0, 0, track_length, 10);
+    }
+
+    if (key[KEY_SPACE]) {
+      running = !running;
+    }
+
     rest(20);
   }
   #else
   //for (int i=0; i< 1000; i++) {
-  while(track->live()) {
+  while (track->isLive()) {
     track->step();
   }
   #endif
 
-  std::cout << "mean error: " << statistics->getMeanError() << std::endl;
-  std::cout << "mean error abs: " << statistics->getMeanErrorAbs() << std::endl;
-  
+  statistics->print();
+
   delete car_factory;
   delete track;
   delete config;
   delete statistics;
-
-  car_factory = NULL;
-  track = NULL;
-  config = NULL;
-  statistics = NULL;
 
   #ifdef GUI
   deinitAllegro();
@@ -93,7 +98,7 @@ void initAllegro(int width) {
   depth = desktop_color_depth();
   if (depth == 0) depth = 32;
   set_color_depth(depth);
-  res = set_gfx_mode(GFX_AUTODETECT_WINDOWED, width, 50, 0, 0);
+  res = set_gfx_mode(GFX_AUTODETECT_WINDOWED, width, 10, 0, 0);
   if (res != 0) {
     allegro_message(allegro_error);
     exit(-1);
@@ -101,7 +106,8 @@ void initAllegro(int width) {
 
   install_timer();
   install_keyboard();
-  buffer = create_bitmap(width, 50);
+  set_keyboard_rate(0, 0);
+  buffer = create_bitmap(width, 10);
 }
 
 void deinitAllegro() {

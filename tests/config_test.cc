@@ -1,13 +1,15 @@
 #include <gtest/gtest.h>
-#include "../config.h"
+#include "../src/config.h"
 
-TEST (ConfigTest, LoadFromFile) { 
+TEST (ConfigTest, LoadFromFile) {
     Config config;
     config.loadFromFile("tests/nash.config");
 
-    EXPECT_EQ (8, config.getSiteLength());
+    EXPECT_EQ (2.5, config.getSiteLength());
     EXPECT_EQ (5400, config.getTrackLength());
+    EXPECT_EQ (6, config.getTrackMaxSpeed());
     EXPECT_EQ (1, config.getDefaultCar());
+    EXPECT_EQ (2160, config.getNumberOfTrackSites());
 
     // test default config
     CarConfig cc = config.getCarConfig(1232312);
@@ -16,50 +18,63 @@ TEST (ConfigTest, LoadFromFile) {
 
     // car config 0
     cc = config.getCarConfig(0);
+    EXPECT_EQ (0, cc.car_class);
     CarConfig test;
     test.slowdown_probability = 0.3;
     test.acceleration_probability = 1;
     test.max_speed = 5;
     test.min_speed = 1;
+    test.length = 2;
     EXPECT_EQ (test, cc);
 
     cc = config.getCarConfig(1);
+    EXPECT_EQ (1, cc.car_class);
     test.slowdown_probability = 0.5;
     test.acceleration_probability = 1;
     test.max_speed = 5;
     test.min_speed = 1;
+    test.length = 3;
     EXPECT_EQ (test, cc);
 
     cc = config.getCarConfig(2);
+    EXPECT_EQ (2, cc.car_class);
     test.slowdown_probability = 0.3;
     test.acceleration_probability = 1;
     test.max_speed = 4;
     test.min_speed = 1;
+    test.length = 5;
     EXPECT_EQ (test, cc);
 
     cc = config.getCarConfig(3);
+    EXPECT_EQ (3, cc.car_class);
     test.slowdown_probability = 0.5;
     test.acceleration_probability = 1;
     test.max_speed = 4;
     test.min_speed = 0;
+    test.length = 6;
     EXPECT_EQ (test, cc);
 
     cc = config.getCarConfig(4);
+    EXPECT_EQ (4, cc.car_class);
     test.slowdown_probability = 0.3;
     test.acceleration_probability = 1;
     test.max_speed = 3;
     test.min_speed = 1;
+    test.length = 7;
     EXPECT_EQ (test, cc);
 
     cc = config.getCarConfig(5);
+    EXPECT_EQ (5, cc.car_class);
     test.slowdown_probability = 0.55;
     test.acceleration_probability = 0.3;
     test.max_speed = 2;
     test.min_speed = 1;
+
+    test.length = 8;
     EXPECT_EQ (test, cc);
 }
 
-TEST (ConfigTest, LoadFromBinaryString) { 
+TEST (ConfigTest, LoadFromBinaryString) {
 
     Config config;
     // format: site_length[4];slowdown_p[7];acc_p[7];max_sp[4];min_sp[4]
@@ -85,10 +100,10 @@ TEST (ConfigTest, LoadFromBinaryString) {
 TEST (ConfigTest, LoadFromString) {
     Config config;
     config.loadFromBinaryString("01001100111111010110111001");
-    config.print();
+    // config.print();
 }
 
-TEST (ConfigTest, LoadFromBinaryInteger) { 
+TEST (ConfigTest, LoadFromBinaryInteger) {
 
     Config config;
 
@@ -101,7 +116,7 @@ TEST (ConfigTest, LoadFromBinaryInteger) {
     const char *string_config = "10000110111001111000100001";
 
     for (int i = 25; i >=0; i--) {
-        if (*string_config == '1') { 
+        if (*string_config == '1') {
             binary_config |= 1<<i;
         }
         string_config++;

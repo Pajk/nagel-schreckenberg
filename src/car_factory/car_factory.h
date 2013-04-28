@@ -1,7 +1,7 @@
 #ifndef _CAR_FACTORY_H
 #define _CAR_FACTORY_H
 
-#include "config.h"
+#include "../config.h"
 
 class Car;
 

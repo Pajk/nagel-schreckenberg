@@ -6,7 +6,7 @@
 #include <string>
 
 #include "car_factory.h"
-#include "statistics.h"
+#include "../statistics.h"
 
 class Car;
 
@@ -32,7 +32,7 @@ class CsvCarFactory : public CarFactory {
     virtual ~CsvCarFactory();
 
     std::vector<std::string> nextLine();
-    
+
     Car *nextCar();
 
     void fillBuffer();
