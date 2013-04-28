@@ -44,7 +44,7 @@ int main(int argc, char **argv) {
   //CarFactory *car_factory = new SimpleCarFactory(config);
   car_factory = new CsvCarFactory("data/samples.csv", config, statistics);
 
-  const int track_length = config->getNumberOfTrackSites();
+  const int track_length = config->getNumberOfTrackCells();
   const int track_max_speed = config->getTrackMaxSpeed();
 
   #ifdef GUI

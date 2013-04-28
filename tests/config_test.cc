@@ -9,7 +9,7 @@ TEST (ConfigTest, LoadFromFile) {
     EXPECT_EQ (5400, config.getTrackLength());
     EXPECT_EQ (6, config.getTrackMaxSpeed());
     EXPECT_EQ (1, config.getDefaultCar());
-    EXPECT_EQ (2160, config.getNumberOfTrackSites());
+    EXPECT_EQ (2160, config.getNumberOfTrackCells());
 
     // test default config
     CarConfig cc = config.getCarConfig(1232312);
@@ -74,66 +74,53 @@ TEST (ConfigTest, LoadFromFile) {
     EXPECT_EQ (test, cc);
 }
 
-TEST (ConfigTest, LoadFromBinaryString) {
-
-    Config config;
-    // format: site_length[4];slowdown_p[7];acc_p[7];max_sp[4];min_sp[4]
-    // priklad pro 8;0.55;0.3;2;1
-    // 1000 0110111 0011110 0010 0001
-    config.loadFromBinaryString("10000110111001111000100001");
-
-    EXPECT_EQ (8, config.getSiteLength());
-    EXPECT_EQ (5400, config.getTrackLength());
-    EXPECT_EQ (0, config.getDefaultCar());
-
-    CarConfig cc = config.getCarConfig(0);
-    EXPECT_EQ (cc, config.getCarConfig(1));
-
-    CarConfig test;
-    test.slowdown_probability = 0.55;
-    test.acceleration_probability = 0.3;
-    test.max_speed = 2;
-    test.min_speed = 1;
-    EXPECT_EQ (test, cc);
-}
-
-TEST (ConfigTest, LoadFromString) {
-    Config config;
-    config.loadFromBinaryString("01001100111111010110111001");
-    // config.print();
-}
-
-TEST (ConfigTest, LoadFromBinaryInteger) {
+TEST (ConfigTest, LoadFromInteger) {
 
     Config config;
 
-    // format: site_length[4];slowdown_p[7];acc_p[7];max_sp[4];min_sp[4]
-    // 26 bitu
-    // priklad pro 8;0.55;0.3;2;1
-    // 1000 0110111 0011110 0010 0001
+    // format: car_length[3]; max_speed[4]; slowdown_probability[7]; acceleration_probability[7];
+    // 21 bitu
+    // BITY   HODNOTA                     POCET BITU
+    // 20-18  car_length                  3
+    // 17-14  max_speed                   4
+    // 13-7   slowdown_probability        7
+    // 6-0    acceleration_probability    7
+    // Delka vozidla <1, 8>
+    // Maximalni rychlost vozidla <1, 16>
+    // Pravdepodobnost zpomaleni <0, 1>
+    // Pravdepodobnost zrychleni <0, 1>
 
-    int binary_config = 0;
-    const char *string_config = "10000110111001111000100001";
+    // priklad pro 3;6;0.5;0.5
+    // 010 0101 1000000 1000000
+    // 2   5    64      64
 
-    for (int i = 25; i >=0; i--) {
+    int integer_config = 0;
+    const char *string_config = "010010110000001000000";
+
+    // zakodovani do integeru
+    for (int i = strlen(string_config) - 1; i >=0; i--) {
         if (*string_config == '1') {
-            binary_config |= 1<<i;
+            integer_config |= 1<<i;
         }
         string_config++;
     }
-    config.loadFromInteger(binary_config);
+    config.loadFromInteger(integer_config);
 
-    EXPECT_EQ (8, config.getSiteLength());
-    EXPECT_EQ (5400, config.getTrackLength());
+    EXPECT_EQ (2.5, config.getSiteLength());
+    EXPECT_EQ (5350, config.getTrackLength());
     EXPECT_EQ (0, config.getDefaultCar());
 
     CarConfig cc = config.getCarConfig(0);
     EXPECT_EQ (cc, config.getCarConfig(1));
 
     CarConfig test;
-    test.slowdown_probability = 0.55;
-    test.acceleration_probability = 0.3;
-    test.max_speed = 2;
+    test.slowdown_probability = 0.5;
+    test.acceleration_probability = 0.5;
+    test.max_speed = 6;
     test.min_speed = 1;
+    test.length = 3;
+    test.car_class = 0;
+    // test.print();
+    // cc.print();
     EXPECT_EQ (test, cc);
 }

@@ -39,7 +39,7 @@ CsvCarFactory *car_factory;
  * 3 - GADemeGA
  */
 #ifndef GA
-#define GA 1
+#define GA 2
 #endif
 
 // =========================== fitness funkce =================================
@@ -56,23 +56,28 @@ float Fitness(GAGenome& g) {
     // cout << params << endl;
     Config *config = new Config();
     config->loadFromInteger(params);
-    // config->print();
 
     Statistics *statistics = new Statistics();
     car_factory->resetIterator();
     car_factory->setConfig(config);
     car_factory->setStatistics(statistics);
-    int track_length = config->getNumberOfTrackSites();
-    Track *track = new Track(car_factory, track_length);
+
+    int track_length = config->getNumberOfTrackCells();
+    // int track_max_speed = config->getTrackMaxSpeed();
+    Track *track = new Track(car_factory, track_length, 5);
 
     while (track->isLive()) {
         track->step();
     }
 
-    float fitness = fabs(statistics->getMeanError());
+    float fitness = statistics->getMeanError();
 
-    //statistics->print();
-    cout << fitness << endl;
+    cout << "======================================================" << endl
+         << "== FITNESS: " << fitness << endl;
+
+    config->print();
+
+    statistics->print();
 
     delete track;
     delete config;
@@ -105,7 +110,7 @@ int main(int argc, char **argv) {
     GARandomSeed(time(NULL)*getpid());
 
     // genom - matice parametru modelu
-    GA1DBinaryStringGenome genom(26, Fitness);
+    GA1DBinaryStringGenome genom(21, Fitness);
 
     car_factory = new CsvCarFactory("data/samples.csv");
 

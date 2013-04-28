@@ -20,6 +20,8 @@ struct CarConfig {
       cc.min_speed == min_speed &&
       cc.length == length;
   }
+
+  void print();
 };
 
 class Config {
@@ -35,7 +37,6 @@ class Config {
     Config();
 
     void loadFromFile(const char *filename);
-    void loadFromBinaryString(const char *binary_string);
     void loadFromInteger(int binary_integer);
     CarConfig getCarConfig(int car_class);
     CarConfig getDefaultCarConfig();
@@ -46,7 +47,7 @@ class Config {
     int getTrackLength() { return track_length; }
     int getTrackMaxSpeed() { return track_max_speed; }
     int getDefaultCar() { return default_car; }
-    int getNumberOfTrackSites() { return site_length > 0 ? track_length/site_length : 1; }
+    int getNumberOfTrackCells() { return site_length > 0 ? track_length/site_length : 1; }
     int getNumberOfCarTypes() { return car_configs.size(); }
 };
 

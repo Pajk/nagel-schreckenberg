@@ -9,7 +9,7 @@
 using namespace std;
 
 Config::Config() {
-  track_length = 5400;
+  track_length = 5350;
   default_car = 0;
   site_length = 2.5;
   track_max_speed = 6;
@@ -112,61 +112,11 @@ CarConfig Config::getDefaultCarConfig() {
 
 }
 
-void Config::loadFromBinaryString(const char *binary_string) {
-
-  int i, tmp;
-  const char *config = binary_string;
-
-  for (i = 3, tmp = 0; i >= 0; i--) {
-    if (*config == '1') {
-       tmp |= 1<<i;
-    }
-    config++;
-  }
-  site_length = tmp;
-
-  CarConfig car_config;
-
-  for (i = 6, tmp = 0; i >= 0; i--) {
-    if (*config == '1') {
-        tmp |= 1<<i;
-    }
-    config++;
-  }
-  car_config.slowdown_probability = float(tmp)/100.0;
-
-  for (i = 6, tmp = 0; i >= 0; i--) {
-    if (*config == '1') {
-        tmp |= 1<<i;
-    }
-    config++;
-  }
-  car_config.acceleration_probability = float(tmp)/100.0;
-
-  for (i = 3, tmp = 0; i >= 0; i--) {
-    if (*config == '1') {
-        tmp |= 1<<i;
-    }
-    config++;
-  }
-  car_config.max_speed = tmp;
-
-  for (i = 3, tmp = 0; i >= 0; i--) {
-    if (*config == '1') {
-        tmp |= 1<<i;
-    }
-    config++;
-  }
-  car_config.min_speed = tmp;
-
-  car_configs[0] = car_config;
-}
-
 void Config::print() {
 
     cout << "site length: " << site_length << endl
          << "track length: " << track_length << endl
-         << "number of track sites: " << getNumberOfTrackSites() << endl;
+         << "number of track sites: " << getNumberOfTrackCells() << endl;
 
     for (map<int,CarConfig>::iterator it = car_configs.begin(); it != car_configs.end(); ++it) {
         cout << "car " << it->first << ":" << endl;
@@ -174,7 +124,8 @@ void Config::print() {
         cout << "  slowdown_probability: " << cc.slowdown_probability << endl
              << "  acceleration_probability: " << cc.acceleration_probability << endl
              << "  max_speed: " << cc.max_speed << endl
-             << "  min_speed: " << cc.min_speed << endl;
+             << "  min_speed: " << cc.min_speed << endl
+             << "  length: " << cc.length << endl;
     }
 }
 
@@ -182,54 +133,68 @@ void Config::loadFromInteger(int binary_integer) {
 
   int i, tmp;
 
-  for (i = 25, tmp = 0; i >= 22; i--) {
-    if (binary_integer>>i & 1) {
-       tmp |= 1<<(i-22);
-    }
-  }
-  site_length = tmp;
-
   CarConfig car_config;
+  car_config.min_speed = 1;
+  car_config.car_class = 0;
 
-  for (i = 21, tmp = 0; i >= 15; i--) {
+  // format: car_length[3]; max_speed[4]; slowdown_probability[7]; acceleration_probability[7];
+  // 21 bitu
+  // BITY   HODNOTA                     POCET BITU
+
+  // Delka vozidla <1,8>
+  // 20-18  car_length                  3
+
+  for (i = 20, tmp = 0; i >= 18; i--) {
     if (binary_integer>>i & 1) {
-        tmp |= 1<<(i-15);
+        tmp |= 1<<(i-18);
     }
   }
-  if (tmp > 60) tmp = 60;
-  if (tmp < 10) tmp = 10;
-  car_config.slowdown_probability = float(tmp)/100.0;
+  tmp += 1; // <0,7> => <1,8>
+  car_config.length = tmp;
 
-  for (i = 14, tmp = 0; i >= 8; i--) {
+  // Maximalni rychlost vozidla <1,16>
+  // 17-14  max_speed                   4
+
+  for (i = 17, tmp = 0; i >= 14; i--) {
     if (binary_integer>>i & 1) {
-        tmp |= 1<<(i-8);
+        tmp |= 1<<(i-14);
     }
   }
-  if (tmp > 100) tmp = 100;
-  if (tmp < 10) tmp = 10;
-  car_config.acceleration_probability = float(tmp)/100.0;
-
-  for (i = 7, tmp = 0; i >= 4; i--) {
-    if (binary_integer>>i & 1) {
-        tmp |= 1<<(i-4);
-    }
-  }
-  if (tmp < 2) tmp = 2;
+  tmp += 1;  // <0,15> => <1,16>
   car_config.max_speed = tmp;
 
-  for (i = 3, tmp = 0; i >= 0; i--) {
+  // Pravdepodobnost zpomaleni <0,1.0>
+  // 13-7   slowdown_probability        7
+
+  for (i = 13, tmp = 0; i >= 7; i--) {
+    if (binary_integer>>i & 1) {
+        tmp |= 1<<(i-7);
+    }
+  }
+  // v teto fazi je hodnota tmp v intervalu <0,127>
+  // nasleduje prevod do intrvalu <0,1.0>
+  float unit = 1.0/128;
+  car_config.slowdown_probability = float(tmp) * unit;
+
+  // Pravdepodobnost zrychleni <0, 1>
+  // 6-0    acceleration_probability    7
+  for (i = 6, tmp = 0; i >= 0; i--) {
     if (binary_integer>>i & 1) {
         tmp |= 1<<i;
     }
   }
-  if (tmp >= car_config.max_speed) {
-    tmp = car_config.max_speed - 2;
-  }
-  if (tmp < 0) tmp = 0;
-  car_config.min_speed = tmp;
-
-
-  car_config.length = 3;
+  car_config.acceleration_probability = float(tmp) * unit;
 
   car_configs[0] = car_config;
+}
+
+
+void CarConfig::print() {
+  cout << "=== car config: " << endl
+       << "class: " << car_class << endl
+       << "slowdown_probability: " << slowdown_probability << endl
+       << "acceleration_probability: " << acceleration_probability << endl
+       << "max_speed: " << max_speed << endl
+       << "min_speed: " << min_speed << endl
+       << "length: " << length << endl;
 }
