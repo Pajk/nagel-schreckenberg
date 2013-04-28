@@ -91,11 +91,11 @@ TEST (ConfigTest, LoadFromInteger) {
     // Pravdepodobnost zrychleni <0, 1>
 
     // priklad pro 3;6;0.5;0.5
-    // 010 0101 1000000 1000000
-    // 2   5    64      64
+    // 010 0101 0111111 0111111
+    // 2   5    63      63
 
     int integer_config = 0;
-    const char *string_config = "010010110000001000000";
+    const char *string_config = "010010101111110111111";
 
     // zakodovani do integeru
     for (int i = strlen(string_config) - 1; i >=0; i--) {

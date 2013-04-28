@@ -102,15 +102,6 @@ void Car::move() {
   // std::cout << id << " rychlost " << current_speed << " = " << current_speed * config->getSiteLength() * 3.6 << " km/h" << std::endl;
   advanceCells(current_speed);
 
-  // if (position > track->getLength()) {
-    // delete this;
-  // #ifdef GUI
-  // } else {
-    // for (int i = 0; i < length; ++i) {
-      // line(buffer, position - i, 0, position - i, 50, makecol(255,0,0));
-    // }
-  // #endif
-  // }
 }
 
 void Car::start(Track *track, Car *car_in_front, Cell *first_cell) {

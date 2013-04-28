@@ -25,8 +25,6 @@ const float pcross = 0.1;     // krizeni
 
 CsvCarFactory *car_factory;
 
-//#define DEBUG               // zapnuti ladicich vypisu
-
 // nazev souboru, do ktere se ulozi nejlepsi nalezene reseni:
 #ifndef OUTPUT_FILE
 #define OUTPUT_FILE "results.txt"
@@ -48,14 +46,27 @@ float Fitness(GAGenome& g) {
 
     GA1DBinaryStringGenome &genome = (GA1DBinaryStringGenome &)g;
 
+    #ifdef DEBUG
+    cout << "======================================================" << endl;
+    #endif
+
     // ziskani parametru ve forme integeru
     int params = 0;
-    for (int i = 0; i < genome.length(); i++) {
+    for (int i = genome.length() - 1; i >= 0; i--) {
         params |= genome.gene(i)<<i;
+        #ifdef DEBUG
+        if (i == 17 || i == 13 || i == 6) cout << '-';
+        cout << genome.gene(i);
+        #endif
     }
-    // cout << params << endl;
+
     Config *config = new Config();
     config->loadFromInteger(params);
+
+    #ifdef DEBUG
+    cout << endl;
+    config->print();
+    #endif
 
     Statistics *statistics = new Statistics();
     car_factory->resetIterator();
@@ -72,12 +83,10 @@ float Fitness(GAGenome& g) {
 
     float fitness = statistics->getMeanError();
 
-    cout << "======================================================" << endl
-         << "== FITNESS: " << fitness << endl;
-
-    config->print();
-
+    #ifdef DEBUG
+    cout << "== FITNESS: " << fitness << endl;
     statistics->print();
+    #endif
 
     delete track;
     delete config;
@@ -85,6 +94,32 @@ float Fitness(GAGenome& g) {
 
     return fitness;
 }
+
+int
+SinglePointCrossover(const GAGenome& p1, const GAGenome& p2, GAGenome* c1, GAGenome* c2){
+  GA1DBinaryStringGenome &mom=(GA1DBinaryStringGenome &)p1;
+  GA1DBinaryStringGenome &dad=(GA1DBinaryStringGenome &)p2;
+
+  int n=0;
+  unsigned int site = 14;
+  unsigned int len = mom.length() - site;
+
+  if(c1){
+    GA1DBinaryStringGenome &sis=(GA1DBinaryStringGenome &)*c1;
+    sis.copy(mom, 0, 0, site);
+    sis.copy(dad, site, site, len);
+    n++;
+  }
+  if(c2){
+    GA1DBinaryStringGenome &bro=(GA1DBinaryStringGenome &)*c2;
+    bro.copy(dad, 0, 0, site);
+    bro.copy(mom, site, site, len);
+    n++;
+  }
+
+  return n;
+}
+
 
 // ============================ rizeni evoluce ==============================
 
@@ -117,7 +152,7 @@ int main(int argc, char **argv) {
     // nastaveni genetickych operatoru
     //genom.initializer(Initializer);
     //genom.mutator(Mutation);
-    //genom.crossover(GA1DBinaryStringGenome::OnePointCrossover);
+    genom.crossover(SinglePointCrossover);
 
     // vytvoreni ga
     #if GA == 1
@@ -149,10 +184,10 @@ int main(int argc, char **argv) {
 
         ++ga;
 //        #ifndef TEST
-        if ((ga.statistics().generation() % ga.scoreFrequency()) == 0) {
+        // if ((ga.statistics().generation() % ga.scoreFrequency()) == 0) {
             cout << "Generace " << ga.statistics().generation()
                  << " - Nejlepsi fitness: " << ga.population().min() << endl;
-        }
+        // }
 //        #endif
 
         if (ga.population().min() == 0)
@@ -184,7 +219,6 @@ int main(int argc, char **argv) {
     Config *config = new Config();
     config->loadFromInteger(params);
     config->print();
-
 
     return 0;
 }

@@ -173,6 +173,7 @@ void Config::loadFromInteger(int binary_integer) {
   }
   // v teto fazi je hodnota tmp v intervalu <0,127>
   // nasleduje prevod do intrvalu <0,1.0>
+  tmp += 1;
   float unit = 1.0/128;
   car_config.slowdown_probability = float(tmp) * unit;
 
@@ -183,6 +184,7 @@ void Config::loadFromInteger(int binary_integer) {
         tmp |= 1<<i;
     }
   }
+  tmp += 1;
   car_config.acceleration_probability = float(tmp) * unit;
 
   car_configs[0] = car_config;
