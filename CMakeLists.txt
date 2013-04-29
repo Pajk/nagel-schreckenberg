@@ -36,3 +36,5 @@ IF(GTEST_FOUND)
     add_executable(bin/run_tests tests/tests.cc ${SOURCES} ${TESTS})
     target_link_libraries(bin/run_tests ${GTEST_LIBRARIES} pthread)
 ENDIF(GTEST_FOUND)
+
+add_executable(bin/analyzer src/analyzer.cc)

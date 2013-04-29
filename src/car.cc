@@ -4,12 +4,6 @@
 #include "car.h"
 #include "cell.h"
 
-#ifdef GUI
-#include <allegro.h>
-
-extern BITMAP *buffer;
-#endif
-
 Car::Car(long id, int car_class, Config *config, Statistics *statistics) {
 
   this->id = id;

@@ -7,12 +7,6 @@
 #include "car_factory/car_factory.h"
 #include "cell.h"
 
-#ifdef GUI
-#include <allegro.h>
-
-extern BITMAP *buffer;
-#endif
-
 void Track::createCells() {
   Cell *cell = NULL, *cell_tmp = NULL;
 
@@ -118,20 +112,6 @@ void Track::step() {
       next_car->setTimeIn(next_car->getTimeIn() - time_offset);
     }
   }
-
-  /**
-   * Vykresleni cesty
-   */
-  #ifdef GUI
-    Cell * tmp = first_cell;
-    while (tmp) {
-      // std::cout << "vykresluju " << tmp->getPosition() << " - " << tmp->isOccupied() << std::endl;
-      if (tmp->isOccupied()) {
-        line(buffer, tmp->getPosition(), 0, tmp->getPosition(), 10, makecol(255,0,0));
-      }
-      tmp = tmp->getCellFront();
-    }
-  #endif
 
   /**
    * Smazani vozidel, ktra vyjela z vozovky

@@ -9,11 +9,13 @@
 #include "car_factory/csv_car_factory.h"
 #include "config.h"
 #include "statistics.h"
+#include "cell.h"
 
 #ifdef GUI
 #include <allegro.h>
 
 BITMAP *buffer;
+int screen_width;
 #endif
 
 void initAllegro(int);
@@ -54,19 +56,45 @@ int main(int argc, char **argv) {
   track = new Track(car_factory, track_length, track_max_speed);
 
   #ifdef GUI
+  BITMAP *b;
+  int red = makecol(255,0,0);
+  int green = makecol(0,255,0);
   while (!key[KEY_ESC]) {
 
     if (running) {
       clear_to_color(buffer, makecol(0, 0, 0));
       track->step();
-      blit(buffer, screen, 0, 0, 0, 0, track_length, 10);
+
+      /**
+       * Vykresleni cesty
+       */
+      Cell * tmp = track->getFirstCell();
+      while (tmp) {
+        if (tmp->isOccupied()) {
+          int car_class = tmp->getCar()->getCarClass();
+          if (car_class < 2) {
+            // rychlejsi
+            line(buffer, tmp->getPosition(), 0, tmp->getPosition(), 10, green);
+          } else {
+            // pomalejsi auta
+            line(buffer, tmp->getPosition(), 0, tmp->getPosition(), 10, red);
+          }
+
+        }
+        tmp = tmp->getCellFront();
+      }
+
+      b = create_bitmap(screen_width, 10);
+      stretch_blit(buffer, b, 0, 0, buffer->w, buffer->h, 0, 0, b->w, b->h);
+      blit(b, screen, 0, 0, 0, 0, screen_width, 10);
+      destroy_bitmap(b);
     }
 
     if (key[KEY_SPACE]) {
       running = !running;
     }
 
-    rest(20);
+    rest(10);
   }
   #else
   //for (int i=0; i< 1000; i++) {
@@ -93,12 +121,16 @@ END_OF_MAIN()
 
 void initAllegro(int width) {
 
-  int depth, res;
+  int depth, res, h;
   allegro_init();
   depth = desktop_color_depth();
+
+  // ziskani rozliseni obrazovky, pokud nelze, nastavi se default sirka
+  if (get_desktop_resolution(&screen_width, &h) != 0) screen_width = 1440;
+  if (screen_width > 1680) screen_width = 1680;
   if (depth == 0) depth = 32;
   set_color_depth(depth);
-  res = set_gfx_mode(GFX_AUTODETECT_WINDOWED, width, 10, 0, 0);
+  res = set_gfx_mode(GFX_AUTODETECT_WINDOWED, screen_width, 10, 0, 0);
   if (res != 0) {
     allegro_message(allegro_error);
     exit(-1);
