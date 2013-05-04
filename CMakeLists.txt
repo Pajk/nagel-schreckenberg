@@ -31,10 +31,10 @@ ENDIF(ALLEGRO_FOUND)
 
 find_package(GoogleTest)
 
-IF(GTEST_FOUND)
-    include_directories(${GTEST_INCLUDE_DIRS})
+IF(GTEST_FOUND AND GALIB_FOUND)
+    include_directories(${GTEST_INCLUDE_DIRS} ${GALIB_INCLUDE_DIRS})
     add_executable(bin/run_tests tests/tests.cc ${SOURCES} ${TESTS})
-    target_link_libraries(bin/run_tests ${GTEST_LIBRARIES} pthread)
-ENDIF(GTEST_FOUND)
+    target_link_libraries(bin/run_tests ${GTEST_LIBRARIES} pthread ${GALIB_LIBRARIES})
+ENDIF(GTEST_FOUND AND GALIB_FOUND)
 
 add_executable(bin/analyzer src/analyzer.cc)

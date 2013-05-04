@@ -38,6 +38,7 @@ int main(int argc, char **argv) {
 
   config = new Config();
   config->loadFromFile("data/nash.config");
+  config->print();
 
   statistics = new Statistics();
 
@@ -127,7 +128,7 @@ void initAllegro(int width) {
 
   // ziskani rozliseni obrazovky, pokud nelze, nastavi se default sirka
   if (get_desktop_resolution(&screen_width, &h) != 0) screen_width = 1440;
-  if (screen_width > 1680) screen_width = 1680;
+  if (screen_width > 1300) screen_width = 1300;
   if (depth == 0) depth = 32;
   set_color_depth(depth);
   res = set_gfx_mode(GFX_AUTODETECT_WINDOWED, screen_width, 10, 0, 0);

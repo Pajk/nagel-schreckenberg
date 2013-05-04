@@ -73,10 +73,10 @@ void Car::move() {
    * Pokud je maximalni povolena rychlost na vozovce mensi nez maximalni
    * mozna rychlost vozidla, bere se ohled na na max. povolenou rychlost.
    */
-  int max_allowed_speed = track->getMaxSpeed() < max_speed ? track->getMaxSpeed() : max_speed;
+  // int max_allowed_speed = track->getMaxSpeed() < max_speed ? track->getMaxSpeed() : max_speed;
 
   // 1) akceleracce
-  if (rand() < RAND_MAX*acceleration_probability && current_speed < max_allowed_speed
+  if (rand() < RAND_MAX*acceleration_probability && current_speed < max_speed
     && dist > current_speed + 1) {
 
     current_speed++;

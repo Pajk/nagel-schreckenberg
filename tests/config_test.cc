@@ -1,5 +1,14 @@
+#include <cmath>
+#include <bitset>
 #include <gtest/gtest.h>
+#include <ga/GA1DBinStrGenome.h>
+
 #include "../src/config.h"
+
+using namespace std;
+
+#define KMPH_TO_CELL_PER_SEC(X) round(float(X)/3.6/site_length)
+#define M_TO_CELL(X) X/site_length
 
 TEST (ConfigTest, LoadFromFile) {
     Config config;
@@ -17,60 +26,68 @@ TEST (ConfigTest, LoadFromFile) {
     EXPECT_EQ (default_cc, cc);
 
     // car config 0
+    // v testovacim config souboru je nastavena delka jedne bunky na 2.5 m,
+    // max rychlost na 50 km/h, delka vozidla na 5 m, v nastaveni jsou ulozeny
+    // jiz prepocitane hodnoty v bunkach za sekundu
     cc = config.getCarConfig(0);
     EXPECT_EQ (0, cc.car_class);
     CarConfig test;
     test.slowdown_probability = 0.3;
     test.acceleration_probability = 1;
-    test.max_speed = 5;
+    test.max_speed = 6;
     test.min_speed = 1;
     test.length = 2;
     EXPECT_EQ (test, cc);
+    // test.print();
+    // cc.print();
+
+    float site_length = config.getSiteLength();
 
     cc = config.getCarConfig(1);
     EXPECT_EQ (1, cc.car_class);
     test.slowdown_probability = 0.5;
     test.acceleration_probability = 1;
-    test.max_speed = 5;
-    test.min_speed = 1;
-    test.length = 3;
+    test.max_speed = KMPH_TO_CELL_PER_SEC(50);
+    test.min_speed = KMPH_TO_CELL_PER_SEC(10);
+    test.length = M_TO_CELL(7.5);
     EXPECT_EQ (test, cc);
+    // test.print();
+    // cc.print();
 
     cc = config.getCarConfig(2);
     EXPECT_EQ (2, cc.car_class);
     test.slowdown_probability = 0.3;
-    test.acceleration_probability = 1;
-    test.max_speed = 4;
-    test.min_speed = 1;
-    test.length = 5;
+    test.acceleration_probability = 0.6;
+    test.max_speed = KMPH_TO_CELL_PER_SEC(40);
+    test.min_speed = KMPH_TO_CELL_PER_SEC(10);
+    test.length = M_TO_CELL(10);
     EXPECT_EQ (test, cc);
 
     cc = config.getCarConfig(3);
     EXPECT_EQ (3, cc.car_class);
     test.slowdown_probability = 0.5;
     test.acceleration_probability = 1;
-    test.max_speed = 4;
+    test.max_speed = KMPH_TO_CELL_PER_SEC(40);
     test.min_speed = 0;
-    test.length = 6;
+    test.length = M_TO_CELL(15);
     EXPECT_EQ (test, cc);
 
     cc = config.getCarConfig(4);
     EXPECT_EQ (4, cc.car_class);
-    test.slowdown_probability = 0.3;
-    test.acceleration_probability = 1;
-    test.max_speed = 3;
-    test.min_speed = 1;
-    test.length = 7;
+    test.slowdown_probability = 0.6;
+    test.acceleration_probability = 0.2;
+    test.max_speed = KMPH_TO_CELL_PER_SEC(50);
+    test.min_speed = KMPH_TO_CELL_PER_SEC(5);
+    test.length = M_TO_CELL(15);
     EXPECT_EQ (test, cc);
 
     cc = config.getCarConfig(5);
     EXPECT_EQ (5, cc.car_class);
     test.slowdown_probability = 0.55;
     test.acceleration_probability = 0.3;
-    test.max_speed = 2;
-    test.min_speed = 1;
-
-    test.length = 8;
+    test.max_speed = KMPH_TO_CELL_PER_SEC(40);
+    test.min_speed = 0;
+    test.length = M_TO_CELL(20);
     EXPECT_EQ (test, cc);
 }
 
@@ -78,37 +95,30 @@ TEST (ConfigTest, LoadFromInteger) {
 
     Config config;
 
-    // format: car_length[3]; max_speed[4]; slowdown_probability[7]; acceleration_probability[7];
-    // 21 bitu
-    // BITY   HODNOTA                     POCET BITU
-    // 20-18  car_length                  3
-    // 17-14  max_speed                   4
-    // 13-7   slowdown_probability        7
-    // 6-0    acceleration_probability    7
-    // Delka vozidla <1, 8>
-    // Maximalni rychlost vozidla <1, 16>
-    // Pravdepodobnost zpomaleni <0, 1>
-    // Pravdepodobnost zrychleni <0, 1>
+    // format: cell_length[4]; car_length[4]; max_speed[4]; slowdown_probability[7]; acceleration_probability[7];
+    // 26 bitu
+    // BITY   HODNOTA                     POCET BITU   POPIS + INTERVAL
+    // 25-22  cell_length                 4            Delka bunky <1, 10>
+    // 21-18  car_length                  4            Delka vozidla <5, 20>
+    // 17-14  max_speed                   4            Maximalni rychlost vozidla <20, 60>
+    // 13-7   slowdown_probability        7            Pravdepodobnost zpomaleni <0, 1>
+    // 6-0    acceleration_probability    7            Pravdepodobnost zrychleni <0, 1>
 
-    // priklad pro 3;6;0.5;0.5
-    // 010 0101 0111111 0111111
-    // 2   5    63      63
-
-    int integer_config = 0;
-    const char *string_config = "010010101111110111111";
+    // priklad pro nastaveni:
+    // 10m  20m  60km/h 0.5     0.5
+    // 1111 1111 1111   0111111 0111111
+    // 15   15   15      63      63
 
     // zakodovani do integeru
-    for (int i = strlen(string_config) - 1; i >=0; i--) {
-        if (*string_config == '1') {
-            integer_config |= 1<<i;
-        }
-        string_config++;
-    }
-    config.loadFromInteger(integer_config);
+    bitset<32> string_config(string("11111111111101111110111111"));
+    unsigned long ul = string_config.to_ulong();
+    config.loadFromInteger(ul);
 
-    EXPECT_EQ (2.5, config.getSiteLength());
+    int site_length = 10;
+    EXPECT_EQ (site_length, config.getSiteLength());
     EXPECT_EQ (5350, config.getTrackLength());
     EXPECT_EQ (0, config.getDefaultCar());
+    EXPECT_EQ (535, config.getNumberOfTrackCells());
 
     CarConfig cc = config.getCarConfig(0);
     EXPECT_EQ (cc, config.getCarConfig(1));
@@ -116,11 +126,50 @@ TEST (ConfigTest, LoadFromInteger) {
     CarConfig test;
     test.slowdown_probability = 0.5;
     test.acceleration_probability = 0.5;
-    test.max_speed = 6;
-    test.min_speed = 1;
-    test.length = 3;
+    test.max_speed = KMPH_TO_CELL_PER_SEC(60);
+    test.min_speed = 0;
+    test.length = 2;
     test.car_class = 0;
     // test.print();
     // cc.print();
+    EXPECT_EQ (test, cc);
+}
+
+TEST (ConfigTest, LoadFromGABinaryString) {
+
+    // LSB vlevo, MSB vpravo
+    short values[] = {
+        1,1,1,1,1,1,0,
+        1,1,1,1,1,1,0,
+        1,1,1,1,
+        1,1,1,1,
+        1,1,1,1
+    };
+
+    GA1DBinaryStringGenome genome(26);
+    genome = values;
+
+    Config config;
+
+    config.loadFromGABinaryString(genome);
+
+    int site_length = 10;
+    EXPECT_EQ (site_length, config.getSiteLength());
+    EXPECT_EQ (5350, config.getTrackLength());
+    EXPECT_EQ (0, config.getDefaultCar());
+    EXPECT_EQ (535, config.getNumberOfTrackCells());
+
+    CarConfig cc = config.getCarConfig(0);
+    EXPECT_EQ (cc, config.getCarConfig(1));
+
+    CarConfig test;
+    test.slowdown_probability = 0.5;
+    test.acceleration_probability = 0.5;
+    test.max_speed = KMPH_TO_CELL_PER_SEC(60);
+    test.min_speed = 0;
+    test.length = 2;
+    test.car_class = 0;
+    test.print();
+    cc.print();
     EXPECT_EQ (test, cc);
 }

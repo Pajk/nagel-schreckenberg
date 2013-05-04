@@ -4,6 +4,8 @@
 #include <fstream>
 #include <map>
 
+class GABinaryString;
+
 struct CarConfig {
 
   int car_class;
@@ -36,8 +38,18 @@ class Config {
   public:
     Config();
 
+    /**
+     * Pouziti techto medot lze videt v tests/config_test.cc
+     */
     void loadFromFile(const char *filename);
     void loadFromInteger(int binary_integer);
+
+    /**
+     * Nacteni konfigurace z GAlib GABinStr, lze pouzit pouze v pripade,
+     * ze je nalinkovana knihovna GAlib.
+     */
+    void loadFromGABinaryString(GABinaryString& str);
+
     CarConfig getCarConfig(int car_class);
     CarConfig getDefaultCarConfig();
 

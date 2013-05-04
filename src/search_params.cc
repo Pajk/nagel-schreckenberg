@@ -50,18 +50,18 @@ float Fitness(GAGenome& g) {
     cout << "======================================================" << endl;
     #endif
 
-    // ziskani parametru ve forme integeru
-    int params = 0;
-    for (int i = genome.length() - 1; i >= 0; i--) {
-        params |= genome.gene(i)<<i;
-        #ifdef DEBUG
-        if (i == 17 || i == 13 || i == 6) cout << '-';
-        cout << genome.gene(i);
-        #endif
-    }
+    // // ziskani parametru ve forme integeru
+    // int params = 0;
+    // for (int i = genome.length() - 1; i >= 0; i--) {
+    //     params |= genome.gene(i)<<i;
+    //     #ifdef DEBUG
+    //     if (i == 21 || i == 17 || i == 13 || i == 6) cout << '-';
+    //     cout << genome.gene(i);
+    //     #endif
+    // }
 
     Config *config = new Config();
-    config->loadFromInteger(params);
+    config->loadFromGABinaryString(genome);
 
     #ifdef DEBUG
     cout << endl;
@@ -145,7 +145,7 @@ int main(int argc, char **argv) {
     GARandomSeed(time(NULL)*getpid());
 
     // genom - matice parametru modelu
-    GA1DBinaryStringGenome genom(21, Fitness);
+    GA1DBinaryStringGenome genom(26, Fitness);
 
     car_factory = new CsvCarFactory("data/samples.csv");
 
