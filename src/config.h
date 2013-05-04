@@ -5,6 +5,7 @@
 #include <map>
 
 class GABinaryString;
+class Config;
 
 struct CarConfig {
 
@@ -14,6 +15,7 @@ struct CarConfig {
   int max_speed;
   int min_speed;
   int length;
+  Config * config;
 
   bool operator== (const CarConfig& cc) const {
     return cc.slowdown_probability == slowdown_probability &&

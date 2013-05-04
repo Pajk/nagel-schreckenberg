@@ -59,6 +59,7 @@ void Config::loadFromFile(const char *filename) {
       istringstream csin(line.substr(4));
 
       CarConfig car_config;
+      car_config.config = this;
 
       csin >> car_config.car_class;
 
@@ -127,13 +128,8 @@ void Config::print() {
          << "number of track sites: " << getNumberOfTrackCells() << endl;
 
     for (map<int,CarConfig>::iterator it = car_configs.begin(); it != car_configs.end(); ++it) {
-        cout << "car " << it->first << ":" << endl;
         CarConfig cc = it->second;
-        cout << "  slowdown_probability: " << cc.slowdown_probability << endl
-             << "  acceleration_probability: " << cc.acceleration_probability << endl
-             << "  max_speed: " << cc.max_speed << endl
-             << "  min_speed: " << cc.min_speed << endl
-             << "  length: " << cc.length << endl;
+        cc.print();
     }
 }
 
@@ -143,6 +139,7 @@ void Config::loadFromInteger(int binary_integer) {
   float unit;
 
   CarConfig car_config;
+  car_config.config = this;
   car_config.min_speed = 0;
   car_config.car_class = 0;
 
@@ -211,6 +208,7 @@ void Config::loadFromGABinaryString(GABinaryString& str) {
   float unit;
 
   CarConfig car_config;
+  car_config.config = this;
   car_config.min_speed = 0;
   car_config.car_class = 0;
 
@@ -275,11 +273,13 @@ void Config::loadFromGABinaryString(GABinaryString& str) {
 
 
 void CarConfig::print() {
-  cout << "=== car config: " << endl
-       << "class: " << car_class << endl
-       << "slowdown_probability: " << slowdown_probability << endl
-       << "acceleration_probability: " << acceleration_probability << endl
-       << "max_speed: " << max_speed << endl
-       << "min_speed: " << min_speed << endl
-       << "length: " << length << endl;
+  cout << "= car " << car_class << ": " << endl
+       << "  slowdown_probability: " << slowdown_probability << endl
+       << "  acceleration_probability: " << acceleration_probability << endl
+       << "  max_speed: " << max_speed << " (" <<
+        max_speed * config->getSiteLength() * 3.6 << " km/h)" << endl
+       << "  min_speed: " << min_speed << " (" <<
+        min_speed * config->getSiteLength() * 3.6 << " km/h)"<< endl
+       << "  length: " << length << " (" <<
+        length * config->getSiteLength() << " m)" << endl;
 }
