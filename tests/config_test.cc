@@ -137,39 +137,54 @@ TEST (ConfigTest, LoadFromInteger) {
 
 TEST (ConfigTest, LoadFromGABinaryString) {
 
-    // LSB vlevo, MSB vpravo
-    short values[] = {
-        1,1,1,1,1,1,0,
-        1,1,1,1,1,1,0,
-        1,1,1,1,
-        1,1,1,1,
-        1,1,1,1
-    };
+     int car_types = 6;
+     int default_car = 1;
+     int genome_length = 4 + car_types * 26;
 
-    GA1DBinaryStringGenome genome(26);
-    genome = values;
+    // HODNOTA                     POCET BITU   POPIS + INTERVAL
+
+    // NASTAVENI TRATE             celkem 4
+    // cell_length                 4            Delka bunky <1, 10>
+
+    // NASTAVENI AUTA              celkem 26
+    // car_length                  4            Delka vozidla <5, 20>
+    // max_speed                   4            Maximalni rychlost vozidla <20, 60>
+    // min_speed                   4            Minimalni rychlost vozidla <0, 20>
+    // slowdown_probability        7            Pravdepodobnost zpomaleni <0, 1>
+    // acceleration_probability    7            Pravdepodobnost zrychleni <0, 1>
+
+    GA1DBinaryStringGenome genome(genome_length);
+
+    // nastaveni vozidel
+    for (int i = 0; i < genome_length; ++i) {
+        genome.gene(i, 1);
+    }
 
     Config config;
-
-    config.loadFromGABinaryString(genome);
-
+    config.loadFromGABinaryString(genome, default_car);
+    int track_length = 5000;
     int site_length = 10;
-    EXPECT_EQ (site_length, config.getSiteLength());
-    EXPECT_EQ (5350, config.getTrackLength());
-    EXPECT_EQ (0, config.getDefaultCar());
-    EXPECT_EQ (535, config.getNumberOfTrackCells());
+    config.setTrackLength(track_length);
 
-    CarConfig cc = config.getCarConfig(0);
-    EXPECT_EQ (cc, config.getCarConfig(1));
+    EXPECT_EQ (site_length, config.getSiteLength());
+    EXPECT_EQ (track_length, config.getTrackLength());
+    EXPECT_EQ (default_car, config.getDefaultCar());
+    EXPECT_EQ (track_length/site_length, config.getNumberOfTrackCells());
+    EXPECT_EQ (car_types, config.getNumberOfCarTypes());
+
+    CarConfig cc = config.getCarConfig(default_car);
+    EXPECT_EQ (cc, config.getCarConfig(-1));
 
     CarConfig test;
     test.slowdown_probability = 0.5;
-    test.acceleration_probability = 0.5;
+    test.acceleration_probability = 1.0;
     test.max_speed = KMPH_TO_CELL_PER_SEC(60);
-    test.min_speed = 0;
-    test.length = 2;
-    test.car_class = 0;
-    test.print();
-    cc.print();
+    test.min_speed = KMPH_TO_CELL_PER_SEC(20);
+    test.length = M_TO_CELL(20);
+    test.car_class = default_car;
+    test.config = &config;
     EXPECT_EQ (test, cc);
+    // cout << test << cc;
+
+    EXPECT_EQ (car_types-1, config.getCarConfig(car_types-1).car_class);
 }

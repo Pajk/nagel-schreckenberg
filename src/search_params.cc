@@ -27,7 +27,7 @@ CsvCarFactory *car_factory;
 
 // nazev souboru, do ktere se ulozi nejlepsi nalezene reseni:
 #ifndef OUTPUT_FILE
-#define OUTPUT_FILE "results.txt"
+    #define OUTPUT_FILE "results.txt"
 #endif
 
 /**
@@ -37,7 +37,15 @@ CsvCarFactory *car_factory;
  * 3 - GADemeGA
  */
 #ifndef GA
-#define GA 2
+    #define GA 1
+#endif
+
+#ifndef CAR_TYPES
+    #define CAR_TYPES 6
+#endif
+
+#ifndef DEFAULT_CAR
+    #define DEFAULT_CAR 0
 #endif
 
 // =========================== fitness funkce =================================
@@ -50,18 +58,8 @@ float Fitness(GAGenome& g) {
     cout << "======================================================" << endl;
     #endif
 
-    // // ziskani parametru ve forme integeru
-    // int params = 0;
-    // for (int i = genome.length() - 1; i >= 0; i--) {
-    //     params |= genome.gene(i)<<i;
-    //     #ifdef DEBUG
-    //     if (i == 21 || i == 17 || i == 13 || i == 6) cout << '-';
-    //     cout << genome.gene(i);
-    //     #endif
-    // }
-
     Config *config = new Config();
-    config->loadFromGABinaryString(genome);
+    config->loadFromGABinaryString(genome, DEFAULT_CAR);
 
     #ifdef DEBUG
     cout << endl;
@@ -101,7 +99,7 @@ SinglePointCrossover(const GAGenome& p1, const GAGenome& p2, GAGenome* c1, GAGen
   GA1DBinaryStringGenome &dad=(GA1DBinaryStringGenome &)p2;
 
   int n=0;
-  unsigned int site = 14;
+  unsigned int site = 4;
   unsigned int len = mom.length() - site;
 
   if(c1){
@@ -144,15 +142,16 @@ int main(int argc, char **argv) {
 
     GARandomSeed(time(NULL)*getpid());
 
-    // genom - matice parametru modelu
-    GA1DBinaryStringGenome genom(26, Fitness);
+    // genom - matice parametru modelu, 4  bity pro nastaveni delky trate
+    // 26 bitu pro nastaveni kazdeho typu vozidla
+    GA1DBinaryStringGenome genom(4 + CAR_TYPES * 26, Fitness);
 
     car_factory = new CsvCarFactory("data/samples.csv");
 
     // nastaveni genetickych operatoru
     //genom.initializer(Initializer);
     //genom.mutator(Mutation);
-    genom.crossover(SinglePointCrossover);
+    //genom.crossover(SinglePointCrossover);
 
     // vytvoreni ga
     #if GA == 1

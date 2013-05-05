@@ -32,7 +32,8 @@ void Car::loadCarConfig() {
   acceleration_probability = c.acceleration_probability;
   max_speed = c.max_speed;
   min_speed = c.min_speed;
-  current_speed = (max_speed - min_speed)/2;
+  // current_speed = (max_speed - min_speed)/2;
+  current_speed = rand() % max_speed;
   length = c.length;
 }
 

@@ -25,8 +25,12 @@ struct CarConfig {
       cc.length == length;
   }
 
+  std::string toString();
+
   void print();
 };
+
+std::ostream& operator<<(std::ostream& out, CarConfig& r);
 
 class Config {
 
@@ -50,7 +54,7 @@ class Config {
      * Nacteni konfigurace z GAlib GABinStr, lze pouzit pouze v pripade,
      * ze je nalinkovana knihovna GAlib.
      */
-    void loadFromGABinaryString(GABinaryString& str);
+    void loadFromGABinaryString(GABinaryString& str, int default_car);
 
     CarConfig getCarConfig(int car_class);
     CarConfig getDefaultCarConfig();
@@ -63,6 +67,10 @@ class Config {
     int getDefaultCar() { return default_car; }
     int getNumberOfTrackCells() { return site_length > 0 ? track_length/site_length : 1; }
     int getNumberOfCarTypes() { return car_configs.size(); }
+
+    void setTrackLength(int track_length) {
+      this->track_length = track_length;
+    }
 };
 
 #endif

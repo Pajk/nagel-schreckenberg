@@ -202,78 +202,96 @@ void Config::loadFromInteger(int binary_integer) {
   car_configs[0] = car_config;
 }
 
-void Config::loadFromGABinaryString(GABinaryString& str) {
+void Config::loadFromGABinaryString(GABinaryString& str, int default_car) {
 
-  int i, tmp;
+  unsigned int i, tmp, position = 0;
   float unit;
 
-  CarConfig car_config;
-  car_config.config = this;
-  car_config.min_speed = 0;
-  car_config.car_class = 0;
+  this->default_car = default_car;
 
-  // popis formatu je uveden v config_test.cc
-
-  // BITY   HODNOTA                     POCET BITU   POPIS + INTERVAL
-  // 25-22  cell_length                 4            Delka bunky <1, 10>
-  for (i = 25, tmp = 0; i >= 22; i--) {
-    if (str.bit(i)) {
-        tmp |= 1<<(i-22);
-    }
+  // HODNOTA                     POCET BITU   POPIS + INTERVAL
+  // cell_length                 4            Delka bunky <1, 10>
+  for (i = 0, tmp = 0; i < 4; ++i, ++position) {
+    tmp |= str.bit(position) << i;
   }
   tmp += 1;
   unit = 10.0/16.0;
   site_length = float(tmp) * unit;
 
-  // 21-18  car_length                  4            Delka vozidla <5, 20>
 
-  for (i = 21, tmp = 0; i >= 18; i--) {
-    if (str.bit(i)) {
-        tmp |= 1<<(i-18);
+  // Odvozeni poctu typu vozidel z delky genomu
+  int car_types = (str.size() - position)/26;
+
+  // nacteni konfiguraci jednotlivych typu vozidel
+  for (int car_class = 0; car_class < car_types; ++car_class) {
+
+    CarConfig car_config;
+    car_config.config = this;
+    car_config.car_class = car_class;
+
+    /**
+     * car_length                  4            Delka vozidla <5, 20>
+     */
+    for (i = 0, tmp = 0; i < 4; ++i, ++position) {
+      tmp |= str.bit(position) << i;
     }
-  }
-  car_config.length = roundf(float(5 + tmp)/site_length);
+    car_config.length = roundf(float(5 + tmp)/site_length);
 
-  // 17-14  max_speed                   4            Maximalni rychlost vozidla <20, 60>
-
-  for (i = 17, tmp = 0; i >= 14; i--) {
-    if (str.bit(i)) {
-        tmp |= 1<<(i-14);
+    /**
+     * max_speed                   4            Maximalni rychlost vozidla <20, 60>
+     */
+    for (i = 0, tmp = 0; i < 4; ++i, ++position) {
+      tmp |= str.bit(position) << i;
     }
-  }
-  tmp += 1;  // <0,15> => <1,16>
-  unit = 40.0/16.0;
-  car_config.max_speed = roundf(float(20 + tmp*unit) / 3.6 / site_length);
+    // tmp += 1;  // <0,15> => <1,16>
+    unit = 40.0/15.0;
+    car_config.max_speed = roundf(float(20.0 + tmp*unit) / 3.6 / site_length);
 
-  // 13-7   slowdown_probability        7            Pravdepodobnost zpomaleni <0, 1>
-
-  for (i = 13, tmp = 0; i >= 7; i--) {
-    if (str.bit(i)) {
-        tmp |= 1<<(i-7);
+    /**
+     * min_speed                   4            Minimalni rychlost vozidla <0, 20>
+     */
+    for (i = 0, tmp = 0; i < 4; ++i, ++position) {
+      tmp |= str.bit(position) << i;
     }
-  }
-  // v teto fazi je hodnota tmp v intervalu <0,127>
-  // nasleduje prevod do intrvalu <0,1.0>
-  tmp += 1;
-  unit = 1.0/128;
-  car_config.slowdown_probability = float(tmp) * unit;
+    unit = 20.0/15.0;
+    car_config.min_speed = roundf(float(tmp*unit) / 3.6 / site_length);
 
-  // Pravdepodobnost zrychleni <0, 1>
-  // 6-0    acceleration_probability    7
-  for (i = 6, tmp = 0; i >= 0; i--) {
-    if (str.bit(i)) {
-        tmp |= 1<<i;
+    /**
+     * slowdown_probability        7            Pravdepodobnost zpomaleni <0, 0.5>
+     */
+    for (i = 0, tmp = 0; i < 7; ++i, ++position) {
+      tmp |= str.bit(position) << i;
     }
-  }
-  tmp += 1;
-  car_config.acceleration_probability = float(tmp) * unit;
+    // v teto fazi je hodnota tmp v intervalu <0,127>
+    // nasleduje prevod do intrvalu <0,0.5>
+    unit = 0.5/127;
+    car_config.slowdown_probability = float(tmp) * unit;
 
-  car_configs[0] = car_config;
+    /**
+     * acceleration_probability    7            Pravdepodobnost zrychleni <0.1, 1>
+     */
+    for (i = 0, tmp = 0; i < 7; ++i, ++position) {
+      tmp |= str.bit(position) << i;
+    }
+    unit = 1.0/128;
+    tmp += 1;
+    car_config.acceleration_probability = float(tmp) * unit;
+
+    car_configs[car_class] = car_config;
+
+    // car_config.print();
+  }
+
 }
 
+std::ostream& operator<<(std::ostream& out, CarConfig& r) {
+  return out<< r.toString();
+}
 
-void CarConfig::print() {
-  cout << "= car " << car_class << ": " << endl
+string CarConfig::toString() {
+  stringstream ss;
+
+  ss << "= car class" << car_class << ": " << endl
        << "  slowdown_probability: " << slowdown_probability << endl
        << "  acceleration_probability: " << acceleration_probability << endl
        << "  max_speed: " << max_speed << " (" <<
@@ -282,4 +300,11 @@ void CarConfig::print() {
         min_speed * config->getSiteLength() * 3.6 << " km/h)"<< endl
        << "  length: " << length << " (" <<
         length * config->getSiteLength() << " m)" << endl;
+
+  return ss.str();
+}
+
+
+void CarConfig::print() {
+  cout << toString();
 }
