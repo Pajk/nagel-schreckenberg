@@ -37,7 +37,7 @@ CsvCarFactory *car_factory;
  * 3 - GADemeGA
  */
 #ifndef GA
-    #define GA 1
+    #define GA 2
 #endif
 
 #ifndef CAR_TYPES
@@ -54,17 +54,17 @@ float Fitness(GAGenome& g) {
 
     GA1DBinaryStringGenome &genome = (GA1DBinaryStringGenome &)g;
 
-    #ifdef DEBUG
-    cout << "======================================================" << endl;
-    #endif
+    // #ifdef DEBUG
+    // cout << "======================================================" << endl;
+    // #endif
 
     Config *config = new Config();
     config->loadFromGABinaryString(genome, DEFAULT_CAR);
 
-    #ifdef DEBUG
-    cout << endl;
-    config->print();
-    #endif
+    // #ifdef DEBUG
+    // cout << endl;
+    // config->print();
+    // #endif
 
     Statistics *statistics = new Statistics();
     car_factory->resetIterator();
@@ -72,8 +72,7 @@ float Fitness(GAGenome& g) {
     car_factory->setStatistics(statistics);
 
     int track_length = config->getNumberOfTrackCells();
-    // int track_max_speed = config->getTrackMaxSpeed();
-    Track *track = new Track(car_factory, track_length, 5);
+    Track *track = new Track(car_factory, track_length);
 
     while (track->isLive()) {
         track->step();
@@ -83,7 +82,7 @@ float Fitness(GAGenome& g) {
 
     #ifdef DEBUG
     cout << "== FITNESS: " << fitness << endl;
-    statistics->print();
+    // statistics->print();
     #endif
 
     delete track;
@@ -140,6 +139,7 @@ SinglePointCrossover(const GAGenome& p1, const GAGenome& p2, GAGenome* c1, GAGen
  */
 int main(int argc, char **argv) {
 
+    srand(time(NULL)*getpid());
     GARandomSeed(time(NULL)*getpid());
 
     // genom - matice parametru modelu, 4  bity pro nastaveni delky trate
@@ -158,20 +158,20 @@ int main(int argc, char **argv) {
         GASimpleGA ga(genom);
     #elif GA == 2
         GASteadyStateGA ga(genom);
-        ga.pReplacement(0.9);
+        // ga.pReplacement(0.9);
     #elif GA == 3
         GADemeGA ga(genom);
     #endif
 
-    ga.populationSize(popsize);
-    ga.nGenerations(ngens);
-    ga.pCrossover(pcross);
-    ga.pMutation(pmut);
+    // ga.populationSize(popsize);
+    // ga.nGenerations(ngens);
+    // ga.pCrossover(pcross);
+    // ga.pMutation(pmut);
 
     ga.minimize();
 
-    GATournamentSelector selector;
-    ga.selector(selector);
+    // GATournamentSelector selector;
+    // ga.selector(selector);
 
     // moznost nastaveni parametru ze souboru a pres argumenty prikazove radky
     ga.parameters("data/ga_params.txt", gaTrue);
@@ -182,12 +182,16 @@ int main(int argc, char **argv) {
     while (!ga.done()) {
 
         ++ga;
-//        #ifndef TEST
-        // if ((ga.statistics().generation() % ga.scoreFrequency()) == 0) {
+        if ((ga.statistics().generation() % ga.scoreFrequency()) == 0) {
             cout << "Generace " << ga.statistics().generation()
                  << " - Nejlepsi fitness: " << ga.population().min() << endl;
-        // }
-//        #endif
+
+                GA1DBinaryStringGenome& genome = (GA1DBinaryStringGenome&)ga.statistics().bestIndividual();
+
+                Config *config = new Config();
+                config->loadFromGABinaryString(genome, DEFAULT_CAR);
+                config->print();
+        }
 
         if (ga.population().min() == 0)
             break;
@@ -211,12 +215,9 @@ int main(int argc, char **argv) {
 
     // tisk nejlepsiho reseni
     GA1DBinaryStringGenome& genome = (GA1DBinaryStringGenome&)ga.statistics().bestIndividual();
-    int params = 0;
-    for (int i = 0; i < genome.length(); i++) {
-        params |= genome.gene(i)<<i;
-    }
+
     Config *config = new Config();
-    config->loadFromInteger(params);
+    config->loadFromGABinaryString(genome, DEFAULT_CAR);
     config->print();
 
     return 0;

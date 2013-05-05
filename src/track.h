@@ -10,8 +10,7 @@ class Track {
 
   int length,
       number_of_cars,
-      sim_time,
-      max_speed;
+      sim_time;
 
   Car * last_car,
       * next_car,    // auto, ktere ma vjet na cestu jako dalsi v poradi
@@ -29,12 +28,11 @@ class Track {
   CarFactory *car_factory;
 
   public:
-    Track(CarFactory *car_factory, int length, int max_speed = 6);
+    Track(CarFactory *car_factory, int length);
     ~Track();
 
     int getCurrentTime() { return sim_time; }
     int getLength() { return length; }
-    int getMaxSpeed() { return max_speed; }
 
     Car * getLastCar() { return last_car; }
     void setLastCar(Car *car) { last_car = car; }

@@ -2,6 +2,7 @@
 #include <ctime>
 #include <csignal>
 #include <iostream>
+#include <unistd.h>
 
 #include "track.h"
 #include "car.h"
@@ -34,10 +35,16 @@ int main(int argc, char **argv) {
 
   setupSignalHandler();
 
-  srand(time(NULL));
+  srand(time(NULL)*getpid());
 
   config = new Config();
-  config->loadFromFile("data/nash.config");
+
+  if (argc >= 2) {
+    config->loadFromFile(argv[1]);
+    std::cout << "Settings loaded from '" << argv[1] << "'.\n";
+  } else {
+    config->loadFromFile("data/default.config");
+  }
   config->print();
 
   statistics = new Statistics();
@@ -45,16 +52,20 @@ int main(int argc, char **argv) {
   bool running = true;
 
   //CarFactory *car_factory = new SimpleCarFactory(config);
-  car_factory = new CsvCarFactory("data/samples.csv", config, statistics);
+  if (argc >=3) {
+    car_factory = new CsvCarFactory(argv[2], config, statistics);
+    std::cout << "Samples loaded from '" << argv[2] << "'.\n";
+  } else {
+    car_factory = new CsvCarFactory("data/samples.csv", config, statistics);
+  }
 
   const int track_length = config->getNumberOfTrackCells();
-  const int track_max_speed = config->getTrackMaxSpeed();
 
   #ifdef GUI
   initAllegro(track_length);
   #endif
 
-  track = new Track(car_factory, track_length, track_max_speed);
+  track = new Track(car_factory, track_length);
 
   #ifdef GUI
   BITMAP *b;

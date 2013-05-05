@@ -57,7 +57,7 @@ nextCar:
     int expected_time = atoi(line.at(3).c_str());
 
     // if (expected_time > 1000) {
-    //   goto nextCar;
+      // goto nextCar;
     // }
 
     car->setExpectedTime(expected_time);

@@ -8,13 +8,13 @@
 # data modified by the first (the parameters are applied in the order they
 # are listed).
 
-population_size		30
-mutation_probability	0.01
-crossover_probability	0.9
-number_of_generations	300
+population_size		20
+mutation_probability	0.1
+crossover_probability	0.8
+number_of_generations	200
 # pocet populaci - pro GADeme
 #number_of_populations   10
 score_filename		bog.dat
 score_frequency		1
 flush_frequency		50
-replacement_percentage	0.25
+replacement_percentage	0.9

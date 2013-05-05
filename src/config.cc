@@ -14,7 +14,6 @@ Config::Config() {
   track_length = 5350;
   default_car = 0;
   site_length = 2.5;
-  track_max_speed = 50;
 }
 
 void Config::loadFromFile(const char *filename) {
@@ -47,9 +46,6 @@ void Config::loadFromFile(const char *filename) {
 
     } else if (line.find("track_length") != string::npos) {
       sin >> track_length;
-
-    } else if (line.find("track_max_speed") != string::npos) {
-      sin >> track_max_speed;
 
     } else if (line.find("default_car") != string::npos) {
       sin >> default_car;
@@ -99,8 +95,6 @@ void Config::loadFromFile(const char *filename) {
     }
   }
 
-  // prevod max rychlosti z km/h na bunky/s
-  track_max_speed = round(float(track_max_speed) / 3.6 / site_length);
 }
 
 
@@ -123,9 +117,10 @@ CarConfig Config::getDefaultCarConfig() {
 
 void Config::print() {
 
-    cout << "site length: " << site_length << endl
-         << "track length: " << track_length << endl
-         << "number of track sites: " << getNumberOfTrackCells() << endl;
+    cout << "site_length = " << site_length << endl
+         << "track_length = " << track_length << endl
+         << "# number of track sites = " << getNumberOfTrackCells() << endl
+         << "default_car = " << default_car << endl;
 
     for (map<int,CarConfig>::iterator it = car_configs.begin(); it != car_configs.end(); ++it) {
         CarConfig cc = it->second;
@@ -291,15 +286,15 @@ std::ostream& operator<<(std::ostream& out, CarConfig& r) {
 string CarConfig::toString() {
   stringstream ss;
 
-  ss << "= car class" << car_class << ": " << endl
-       << "  slowdown_probability: " << slowdown_probability << endl
-       << "  acceleration_probability: " << acceleration_probability << endl
-       << "  max_speed: " << max_speed << " (" <<
-        max_speed * config->getSiteLength() * 3.6 << " km/h)" << endl
-       << "  min_speed: " << min_speed << " (" <<
-        min_speed * config->getSiteLength() * 3.6 << " km/h)"<< endl
-       << "  length: " << length << " (" <<
-        length * config->getSiteLength() << " m)" << endl;
+  ss << "car " << car_class << endl
+       << "  slowdown_probability = " << slowdown_probability << endl
+       << "  acceleration_probability = " << acceleration_probability << endl
+       << "  max_speed = " << max_speed * config->getSiteLength() * 3.6 << " (" <<
+         max_speed << " cell/s)" << endl
+       << "  min_speed = " << min_speed * config->getSiteLength() * 3.6 << " (" <<
+        min_speed << " cell/s)"<< endl
+       << "  length = " << length * config->getSiteLength() << " (" <<
+         length << " cells)" << endl << "endcar" << endl;
 
   return ss.str();
 }

@@ -16,7 +16,6 @@ TEST (ConfigTest, LoadFromFile) {
 
     EXPECT_EQ (2.5, config.getSiteLength());
     EXPECT_EQ (5400, config.getTrackLength());
-    EXPECT_EQ (6, config.getTrackMaxSpeed());
     EXPECT_EQ (1, config.getDefaultCar());
     EXPECT_EQ (2160, config.getNumberOfTrackCells());
 
@@ -184,7 +183,21 @@ TEST (ConfigTest, LoadFromGABinaryString) {
     test.car_class = default_car;
     test.config = &config;
     EXPECT_EQ (test, cc);
-    // cout << test << cc;
+    // cout << test << cc;:wq
 
     EXPECT_EQ (car_types-1, config.getCarConfig(car_types-1).car_class);
+}
+
+TEST (ConfigTest, genomeToConfig) {
+    string str("0110100101010111000100000101010100000110001110100000000100010111100011110100000101010111001011101011110111111100011110100000100100010001011011010011010000110000");
+
+    GA1DBinaryStringGenome genome(str.size());
+
+    for (int i=0; i < str.length(); ++i)
+        genome.gene(i, int(str[i]) - 48);
+
+    Config config;
+    config.loadFromGABinaryString(genome, 1);
+
+    config.print();
 }

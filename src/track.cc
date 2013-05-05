@@ -28,7 +28,7 @@ void Track::createCells() {
   last_cell = cell;
 }
 
-Track::Track(CarFactory *car_factory, int length, int max_speed) {
+Track::Track(CarFactory *car_factory, int length) {
 
   this->length = length;
   number_of_cars = 0;
@@ -39,7 +39,6 @@ Track::Track(CarFactory *car_factory, int length, int max_speed) {
   start_time = NULL;
   time_offset = 0;
   delete_list = NULL;
-  this->max_speed = max_speed;
 
   next_car = car_factory->nextCar();
   if (next_car) {

@@ -36,7 +36,6 @@ class Config {
 
   float site_length;
   int track_length;
-  int track_max_speed;
   int default_car;
 
   std::map <int, CarConfig> car_configs;
@@ -63,7 +62,6 @@ class Config {
 
     float getSiteLength() { return site_length; }
     int getTrackLength() { return track_length; }
-    int getTrackMaxSpeed() { return track_max_speed; }
     int getDefaultCar() { return default_car; }
     int getNumberOfTrackCells() { return site_length > 0 ? track_length/site_length : 1; }
     int getNumberOfCarTypes() { return car_configs.size(); }
