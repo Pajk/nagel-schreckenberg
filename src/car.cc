@@ -32,8 +32,7 @@ void Car::loadCarConfig() {
   acceleration_probability = c.acceleration_probability;
   max_speed = c.max_speed;
   min_speed = c.min_speed;
-  // current_speed = (max_speed - min_speed)/2;
-  current_speed = rand() % max_speed;
+  current_speed = 0;
   length = c.length;
 }
 
@@ -44,10 +43,15 @@ Car::~Car() {
     total_time = track->getCurrentTime() - time_in;
   }
 
-  // std::cout << "auto " << id << " konci po " << total_time << " ("
-  //           << expected_time << ")" << " s rychlosti " << current_speed << std::endl;
+  // std::cout << "auto " << id << " konci po " << total_time
+  //           << " (" << expected_time << ")"
+  //           << " s rychlosti " << current_speed
+  //           << " a chybou " << expected_time - total_time
+  //           << std::endl;
 
-  statistics->logCarTime(id, total_time, expected_time);
+  if (statistics) {
+    statistics->logCarTime(id, total_time, expected_time);
+  }
 
   if (car_in_front) {
     car_in_front->setCarBehind(NULL);

@@ -9,7 +9,7 @@
 # are listed).
 
 population_size		20
-mutation_probability	0.1
+mutation_probability	0.04
 crossover_probability	0.8
 number_of_generations	200
 # pocet populaci - pro GADeme

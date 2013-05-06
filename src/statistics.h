@@ -21,17 +21,21 @@ class Statistics {
   int max_error;
   int slower_cars;
   int faster_cars;
+  float mean_travel_time;
+  float mean_expected_travel_time;
 
   public:
 
     Statistics() :
       mean_error(-1),
+      faster_mean_error(-1),
+      slower_mean_error(-1),
       min_error(-1),
       max_error(-1),
       slower_cars(-1),
       faster_cars(-1),
-      slower_mean_error(-1),
-      faster_mean_error(-1) {}
+      mean_travel_time(-1),
+      mean_expected_travel_time(-1) {}
 
     void logCarTime(int car_id, int total_time, int expected_time);
 
@@ -39,6 +43,8 @@ class Statistics {
     float getMeanError();
     float getSlowerMeanError();
     float getFasterMeanError();
+    float getMeanTravelTime();
+    float getMeanExpectedTravelTime();
     int getMaxError();
     int getMinError();
     int getSlowerCars();

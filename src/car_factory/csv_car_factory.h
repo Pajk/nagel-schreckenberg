@@ -38,6 +38,8 @@ class CsvCarFactory : public CarFactory {
     void fillBuffer();
 
     void resetIterator();
+    void sortByTimeIn();
+    void sortByExpectedTimeOut();
 
     void setConfig(Config *config) { this->config = config; }
     void setStatistics(Statistics *statistics) { this->statistics = statistics; }

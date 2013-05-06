@@ -18,8 +18,8 @@ class Cell {
   public:
 
     Cell(int cell_position)
-      : position(cell_position), cell_front(NULL), cell_back(NULL),
-        cell_left(NULL), cell_right(NULL), car(NULL) {}
+      : position(cell_position), car(NULL), cell_front(NULL), cell_back(NULL),
+        cell_left(NULL), cell_right(NULL) {}
 
     Cell * getCellFront() { return cell_front; }
     Cell * getCellBack() { return cell_back; }

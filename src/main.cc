@@ -3,6 +3,7 @@
 #include <csignal>
 #include <iostream>
 #include <unistd.h>
+#include <cstring>
 
 #include "track.h"
 #include "car.h"
@@ -29,6 +30,23 @@ CarFactory *car_factory;
 Statistics *statistics;
 Config *config;
 
+using std::cout;
+
+// kontrola, zda klavesa byla naposled stisknuta alespon pred 1s
+bool should_execute(int letter) {
+
+   static int key_last_press[256] = {0};
+   if(!key_last_press[0])
+     memset(key_last_press, 2, sizeof(int) * 256);
+
+   time_t last_press = time(NULL);
+   if((last_press - key_last_press[letter]) >= 1) {
+      key_last_press[letter] = last_press;
+      return true;
+   }
+   return false;
+}
+
 int main(int argc, char **argv) {
 
   track = NULL;
@@ -49,8 +67,6 @@ int main(int argc, char **argv) {
 
   statistics = new Statistics();
 
-  bool running = true;
-
   //CarFactory *car_factory = new SimpleCarFactory(config);
   if (argc >=3) {
     car_factory = new CsvCarFactory(argv[2], config, statistics);
@@ -68,51 +84,62 @@ int main(int argc, char **argv) {
   track = new Track(car_factory, track_length);
 
   #ifdef GUI
-  BITMAP *b;
-  int red = makecol(255,0,0);
-  int green = makecol(0,255,0);
-  while (!key[KEY_ESC]) {
 
-    if (running) {
-      clear_to_color(buffer, makecol(0, 0, 0));
-      track->step();
+    BITMAP *b;
+    int colors[] = { makecol(255,0,0), makecol(0,255,0), makecol(0,0,255),
+      makecol(255,0,255), makecol(0,255,255), makecol(255, 255, 0)
+    };
 
-      /**
-       * Vykresleni cesty
-       */
-      Cell * tmp = track->getFirstCell();
-      while (tmp) {
-        if (tmp->isOccupied()) {
-          int car_class = tmp->getCar()->getCarClass();
-          if (car_class < 2) {
-            // rychlejsi
-            line(buffer, tmp->getPosition(), 0, tmp->getPosition(), 10, green);
-          } else {
-            // pomalejsi auta
-            line(buffer, tmp->getPosition(), 0, tmp->getPosition(), 10, red);
+    bool running = true;
+
+    while (!key[KEY_ESC] && track->isLive()) {
+
+      if (running) {
+        clear_to_color(buffer, makecol(0, 0, 0));
+        track->step();
+
+        /**
+         * Vykresleni cesty
+         */
+        Cell * tmp = track->getFirstCell();
+        while (tmp) {
+          if (tmp->isOccupied()) {
+            int car_class = tmp->getCar()->getCarClass();
+
+            line(buffer, tmp->getPosition(), 0, tmp->getPosition(), 10,
+              colors[car_class%5]);
+
           }
-
+          tmp = tmp->getCellFront();
         }
-        tmp = tmp->getCellFront();
+
+        b = create_bitmap(screen_width, 10);
+        stretch_blit(buffer, b, 0, 0, buffer->w, buffer->h, 0, 0, b->w, b->h);
+        blit(b, screen, 0, 0, 0, 0, screen_width, 10);
+        destroy_bitmap(b);
       }
 
-      b = create_bitmap(screen_width, 10);
-      stretch_blit(buffer, b, 0, 0, buffer->w, buffer->h, 0, 0, b->w, b->h);
-      blit(b, screen, 0, 0, 0, 0, screen_width, 10);
-      destroy_bitmap(b);
+      if (key[KEY_SPACE]) {
+        if (should_execute(KEY_SPACE)) {
+          running = !running;
+          if (running) {
+            cout << "Running\n";
+          } else {
+            cout << "Stopped\n";
+          }
+        }
+      }
+
+      rest(10);
     }
 
-    if (key[KEY_SPACE]) {
-      running = !running;
-    }
-
-    rest(10);
-  }
   #else
-  //for (int i=0; i< 1000; i++) {
-  while (track->isLive()) {
-    track->step();
-  }
+
+    //for (int i=0; i< 1000; i++) {
+    while (track->isLive()) {
+      track->step();
+    }
+
   #endif
 
   statistics->print();
@@ -144,9 +171,9 @@ void initAllegro(int width) {
   set_color_depth(depth);
   res = set_gfx_mode(GFX_AUTODETECT_WINDOWED, screen_width, 10, 0, 0);
   if (res != 0) {
-    allegro_message(allegro_error);
     exit(-1);
   }
+
 
   install_timer();
   install_keyboard();

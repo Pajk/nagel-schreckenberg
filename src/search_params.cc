@@ -78,7 +78,8 @@ float Fitness(GAGenome& g) {
         track->step();
     }
 
-    float fitness = statistics->getMeanError();
+    // float fitness = statistics->getMeanError();
+    float fitness = fabs(statistics->getMeanTravelTime() - statistics->getMeanExpectedTravelTime());
 
     #ifdef DEBUG
     cout << "== FITNESS: " << fitness << endl;
@@ -144,9 +145,14 @@ int main(int argc, char **argv) {
 
     // genom - matice parametru modelu, 4  bity pro nastaveni delky trate
     // 26 bitu pro nastaveni kazdeho typu vozidla
-    GA1DBinaryStringGenome genom(4 + CAR_TYPES * 26, Fitness);
+    GA1DBinaryStringGenome genom(BITS_TRACK + CAR_TYPES * BITS_CAR, Fitness);
 
-    car_factory = new CsvCarFactory("data/samples.csv");
+    if (argc >= 2) {
+        car_factory = new CsvCarFactory(argv[1]);
+        std::cout << "Train data loaded from '" << argv[1] << "'.\n";
+    } else {
+        car_factory = new CsvCarFactory("data/samples_train.csv");
+    }
 
     // nastaveni genetickych operatoru
     //genom.initializer(Initializer);

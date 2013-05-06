@@ -81,6 +81,7 @@ void Track::step() {
    */
   if (isEnterAllowed(next_car)) {
     next_car->start(this, last_car, first_cell);
+    // std::cout << sim_time << " " << next_car->getTimeIn() << std::endl;
     last_car = next_car;
     next_car = NULL;
     number_of_cars++;
@@ -128,7 +129,6 @@ bool Track::isEnterAllowed(Car * car) {
 }
 
 bool Track::isLive() {
-
   return (next_car || last_car) ? true : false;
 }
 

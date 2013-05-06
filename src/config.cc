@@ -82,6 +82,8 @@ void Config::loadFromFile(const char *filename) {
         } else if (line.find("max_speed", 2) != string::npos) {
           csin >> car_config.max_speed;
           car_config.max_speed = roundf(float(car_config.max_speed) / 3.6 / site_length);
+          // auto musi mit moznost se pohybovat
+          if (car_config.max_speed == 0) car_config.max_speed = 1;
 
         } else if (line.find("min_speed", 2) != string::npos) {
           csin >> car_config.min_speed;
@@ -170,6 +172,7 @@ void Config::loadFromInteger(int binary_integer) {
   tmp += 1;  // <0,15> => <1,16>
   unit = 40.0/16.0;
   car_config.max_speed = roundf(float(20 + tmp*unit) / 3.6 / site_length);
+  if(car_config.max_speed == 0) car_config.max_speed = 1;
 
   // 13-7   slowdown_probability        7            Pravdepodobnost zpomaleni <0, 1>
 
@@ -204,18 +207,16 @@ void Config::loadFromGABinaryString(GABinaryString& str, int default_car) {
 
   this->default_car = default_car;
 
-  // HODNOTA                     POCET BITU   POPIS + INTERVAL
-  // cell_length                 4            Delka bunky <1, 10>
-  for (i = 0, tmp = 0; i < 4; ++i, ++position) {
+  // HODNOTA        POCET BITU          POPIS + INTERVAL
+  // cell_length    BITS_CELL_LENGTH    Delka bunky <CELL_LENGTH_L, CELL_LENGTH_R>
+  for (i = 0, tmp = 0; i < BITS_CELL_LENGTH; ++i, ++position) {
     tmp |= str.bit(position) << i;
   }
-  tmp += 1;
-  unit = 10.0/16.0;
-  site_length = float(tmp) * unit;
-
+  unit = (CELL_LENGTH_R-CELL_LENGTH_L)/(pow(2,BITS_CELL_LENGTH)-1);
+  site_length = CELL_LENGTH_L + float(tmp) * unit;
 
   // Odvozeni poctu typu vozidel z delky genomu
-  int car_types = (str.size() - position)/26;
+  int car_types = (str.size() - position)/BITS_CAR;
 
   // nacteni konfiguraci jednotlivych typu vozidel
   for (int car_class = 0; car_class < car_types; ++car_class) {
@@ -225,52 +226,50 @@ void Config::loadFromGABinaryString(GABinaryString& str, int default_car) {
     car_config.car_class = car_class;
 
     /**
-     * car_length                  4            Delka vozidla <5, 20>
+     * car_length   BITS_CAR_LENGTH   Delka vozidla <CAR_LENGTH_L, CAR_LENGTH_R>
      */
-    for (i = 0, tmp = 0; i < 4; ++i, ++position) {
+    for (i = 0, tmp = 0; i < BITS_CAR_LENGTH; ++i, ++position) {
       tmp |= str.bit(position) << i;
     }
-    car_config.length = roundf(float(5 + tmp)/site_length);
+    unit = (CAR_LENGTH_R-CAR_LENGTH_L)/(pow(2,BITS_CAR_LENGTH)-1);
+    car_config.length = roundf((CAR_LENGTH_L + float(tmp) * unit)/site_length);
 
     /**
-     * max_speed                   4            Maximalni rychlost vozidla <20, 60>
+     * max_speed    BITS_MAX_SPEED    Maximalni rychlost vozidla <MAX_SPEED_L, MAX_SPEED_R>
      */
-    for (i = 0, tmp = 0; i < 4; ++i, ++position) {
+    for (i = 0, tmp = 0; i < BITS_MAX_SPEED; ++i, ++position) {
       tmp |= str.bit(position) << i;
     }
-    // tmp += 1;  // <0,15> => <1,16>
-    unit = 40.0/15.0;
-    car_config.max_speed = roundf(float(20.0 + tmp*unit) / 3.6 / site_length);
+    unit = (MAX_SPEED_R-MAX_SPEED_L)/(pow(2,BITS_MAX_SPEED)-1);
+    car_config.max_speed = roundf(float(MAX_SPEED_L + tmp * unit) / 3.6 / site_length);
+    if(car_config.max_speed == 0) car_config.max_speed = 1;
 
     /**
-     * min_speed                   4            Minimalni rychlost vozidla <0, 20>
+     * min_speed    BITS_MIN_SPEED    Minimalni rychlost vozidla <MIN_SPEED_L, MIN_SPEED_R>
      */
-    for (i = 0, tmp = 0; i < 4; ++i, ++position) {
+    for (i = 0, tmp = 0; i < BITS_MIN_SPEED; ++i, ++position) {
       tmp |= str.bit(position) << i;
     }
-    unit = 20.0/15.0;
-    car_config.min_speed = roundf(float(tmp*unit) / 3.6 / site_length);
+    unit = (MIN_SPEED_R-MIN_SPEED_L)/(pow(2,BITS_MIN_SPEED)-1);
+    car_config.min_speed = roundf(float(MIN_SPEED_L + tmp * unit) / 3.6 / site_length);
 
     /**
-     * slowdown_probability        7            Pravdepodobnost zpomaleni <0, 0.5>
+     * slowdown_probability   BITS_SLOWDOWN_P   Pravdepodobnost zpomaleni <SLOWDOWN_L, SLOWDOWN_P>
      */
-    for (i = 0, tmp = 0; i < 7; ++i, ++position) {
+    for (i = 0, tmp = 0; i < BITS_SLOWDOWN_P; ++i, ++position) {
       tmp |= str.bit(position) << i;
     }
-    // v teto fazi je hodnota tmp v intervalu <0,127>
-    // nasleduje prevod do intrvalu <0,0.5>
-    unit = 0.5/127;
-    car_config.slowdown_probability = float(tmp) * unit;
+    unit = (SLOWDOWN_R-SLOWDOWN_L)/(pow(2,BITS_SLOWDOWN_P)-1);
+    car_config.slowdown_probability = SLOWDOWN_L + tmp * unit;
 
     /**
-     * acceleration_probability    7            Pravdepodobnost zrychleni <0.1, 1>
+     * acceleration_probability    BITS_ACC_P   Pravdepodobnost zrychleni <ACC_L, ACC_R>
      */
-    for (i = 0, tmp = 0; i < 7; ++i, ++position) {
+    for (i = 0, tmp = 0; i < BITS_ACC_P; ++i, ++position) {
       tmp |= str.bit(position) << i;
     }
-    unit = 1.0/128;
-    tmp += 1;
-    car_config.acceleration_probability = float(tmp) * unit;
+    unit = (ACC_R-ACC_L)/(pow(2,BITS_ACC_P)-1);
+    car_config.acceleration_probability = ACC_L + tmp * unit;
 
     car_configs[car_class] = car_config;
 

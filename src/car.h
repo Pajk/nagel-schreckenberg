@@ -50,6 +50,7 @@ class Car {
     int getPosition() { return position; }
     int getBackPosition() { return position - length; }
     long getTimeIn() { return time_in; }
+    long getExpectedTimeOut() { return time_in + expected_time; }
     int getLength() { return length; }
     Cell * getOccupiedCell() { return cell; }
 

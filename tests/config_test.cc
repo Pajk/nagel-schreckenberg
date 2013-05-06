@@ -7,8 +7,8 @@
 
 using namespace std;
 
-#define KMPH_TO_CELL_PER_SEC(X) round(float(X)/3.6/site_length)
-#define M_TO_CELL(X) X/site_length
+#define KMPH_TO_CELL_PER_SEC(X) roundf(float(X)/3.6/float(site_length))
+#define M_TO_CELL(X) roundf(X/site_length)
 
 TEST (ConfigTest, LoadFromFile) {
     Config config;
@@ -134,26 +134,27 @@ TEST (ConfigTest, LoadFromInteger) {
     EXPECT_EQ (test, cc);
 }
 
-TEST (ConfigTest, LoadFromGABinaryString) {
+TEST (ConfigTest, LoadFromGABinaryStringMaxValues) {
 
      int car_types = 6;
      int default_car = 1;
-     int genome_length = 4 + car_types * 26;
+     int genome_length = BITS_TRACK + car_types * BITS_CAR;
 
-    // HODNOTA                     POCET BITU   POPIS + INTERVAL
+    // HODNOTA                     POCET BITU           POPIS + INTERVAL
 
-    // NASTAVENI TRATE             celkem 4
-    // cell_length                 4            Delka bunky <1, 10>
+    // NASTAVENI TRATE             celkem BITS_TRACK
+    // cell_length                 BITS_CELL_LENGTH     Delka bunky <1, 10>
 
-    // NASTAVENI AUTA              celkem 26
-    // car_length                  4            Delka vozidla <5, 20>
-    // max_speed                   4            Maximalni rychlost vozidla <20, 60>
-    // min_speed                   4            Minimalni rychlost vozidla <0, 20>
-    // slowdown_probability        7            Pravdepodobnost zpomaleni <0, 1>
-    // acceleration_probability    7            Pravdepodobnost zrychleni <0, 1>
+    // NASTAVENI AUTA              celkem BITS_CAR
+    // car_length                  BITS_CAR_LENGTH            Delka vozidla <5, 20>
+    // max_speed                   BITS_MAX_SPEED            Maximalni rychlost vozidla <20, 60>
+    // min_speed                   BITS_MIN_SPEED            Minimalni rychlost vozidla <0, 20>
+    // slowdown_probability        BITS_SLOWDOWN_P            Pravdepodobnost zpomaleni <0, 1>
+    // acceleration_probability    BITS_ACC_P            Pravdepodobnost zrychleni <0, 1>
 
     GA1DBinaryStringGenome genome(genome_length);
 
+    // TEST KRAJNICH HODNOT NASTAVENI
     // nastaveni vozidel
     for (int i = 0; i < genome_length; ++i) {
         genome.gene(i, 1);
@@ -162,42 +163,85 @@ TEST (ConfigTest, LoadFromGABinaryString) {
     Config config;
     config.loadFromGABinaryString(genome, default_car);
     int track_length = 5000;
-    int site_length = 10;
+    float site_length = CELL_LENGTH_R;
     config.setTrackLength(track_length);
 
     EXPECT_EQ (site_length, config.getSiteLength());
     EXPECT_EQ (track_length, config.getTrackLength());
     EXPECT_EQ (default_car, config.getDefaultCar());
-    EXPECT_EQ (track_length/site_length, config.getNumberOfTrackCells());
+    EXPECT_EQ (int(track_length/site_length), config.getNumberOfTrackCells());
     EXPECT_EQ (car_types, config.getNumberOfCarTypes());
 
     CarConfig cc = config.getCarConfig(default_car);
     EXPECT_EQ (cc, config.getCarConfig(-1));
 
     CarConfig test;
-    test.slowdown_probability = 0.5;
-    test.acceleration_probability = 1.0;
-    test.max_speed = KMPH_TO_CELL_PER_SEC(60);
-    test.min_speed = KMPH_TO_CELL_PER_SEC(20);
-    test.length = M_TO_CELL(20);
+    test.slowdown_probability = SLOWDOWN_R;
+    test.acceleration_probability = ACC_R;
+    test.max_speed = KMPH_TO_CELL_PER_SEC(MAX_SPEED_R);
+    test.min_speed = KMPH_TO_CELL_PER_SEC(MIN_SPEED_R);
+    test.length = M_TO_CELL(CAR_LENGTH_R);
     test.car_class = default_car;
     test.config = &config;
     EXPECT_EQ (test, cc);
-    // cout << test << cc;:wq
+    // cout << test << cc;
 
     EXPECT_EQ (car_types-1, config.getCarConfig(car_types-1).car_class);
 }
 
-TEST (ConfigTest, genomeToConfig) {
-    string str("0110100101010111000100000101010100000110001110100000000100010111100011110100000101010111001011101011110111111100011110100000100100010001011011010011010000110000");
+TEST (ConfigTest, LoadFromGABinaryStringMinValues) {
 
-    GA1DBinaryStringGenome genome(str.size());
+     int car_types = 6;
+     int default_car = 1;
+     int genome_length = BITS_TRACK + car_types * BITS_CAR;
 
-    for (int i=0; i < str.length(); ++i)
-        genome.gene(i, int(str[i]) - 48);
+    GA1DBinaryStringGenome genome(genome_length);
+
+    for (int i = 0; i < genome_length; ++i) {
+        genome.gene(i, 0);
+    }
 
     Config config;
-    config.loadFromGABinaryString(genome, 1);
+    config.loadFromGABinaryString(genome, default_car);
+    int track_length = 5000;
+    float site_length = CELL_LENGTH_L;
+    config.setTrackLength(track_length);
 
-    config.print();
+    EXPECT_EQ (site_length, config.getSiteLength());
+    EXPECT_EQ (track_length, config.getTrackLength());
+    EXPECT_EQ (default_car, config.getDefaultCar());
+    EXPECT_EQ (int(track_length/site_length), config.getNumberOfTrackCells());
+    EXPECT_EQ (car_types, config.getNumberOfCarTypes());
+
+    CarConfig cc = config.getCarConfig(default_car);
+    EXPECT_EQ (cc, config.getCarConfig(-1));
+
+    CarConfig test;
+    test.slowdown_probability = SLOWDOWN_L;
+    test.acceleration_probability = ACC_L;
+    test.max_speed = KMPH_TO_CELL_PER_SEC(MAX_SPEED_L);
+    test.min_speed = KMPH_TO_CELL_PER_SEC(MIN_SPEED_L);
+    test.length = M_TO_CELL(CAR_LENGTH_L);
+    test.car_class = default_car;
+    test.config = &config;
+    EXPECT_EQ (test, cc);
+    cout << "Expected:\n" << test << "Actual:\n" << cc;
+
+    EXPECT_EQ (car_types-1, config.getCarConfig(car_types-1).car_class);
 }
+
+// Tento test lze vyuzit pro prevod genomu z podoby binarniho retezce
+// do formatu, ktery lze pouzit pro nastaveni simulatoru
+// TEST (ConfigTest, genomeToConfig) {
+//     string str("0110100101010111000100000101010100000110001110100000000100010111100011110100000101010111001011101011110111111100011110100000100100010001011011010011010000110000");
+
+//     GA1DBinaryStringGenome genome(str.size());
+
+//     for (int i=0; i < str.length(); ++i)
+//         genome.gene(i, int(str[i]) - 48);
+
+//     Config config;
+//     config.loadFromGABinaryString(genome, 1);
+
+//     config.print();
+// }
