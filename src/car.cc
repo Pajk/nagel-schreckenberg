@@ -18,7 +18,6 @@ Car::Car(long id, int car_class, Config *config, Statistics *statistics) {
   this->position = 0;
   this->old_position = 0;
   this->time_in = 0;
-  this->current_speed = 0;
   this->length = 1;
 
   loadCarConfig();
@@ -28,11 +27,13 @@ void Car::loadCarConfig() {
 
   CarConfig c = config->getCarConfig(car_class);
 
+  // c.print();
+
   slowdown_probability = c.slowdown_probability;
   acceleration_probability = c.acceleration_probability;
   max_speed = c.max_speed;
   min_speed = c.min_speed;
-  current_speed = 0;
+  current_speed = max_speed;
   length = c.length;
 }
 
@@ -69,21 +70,22 @@ Car::~Car() {
   }
 }
 
-void Car::move() {
+void Car::step() {
 
   old_position = position;
-  int dist = getDistance();
+  int free_cells = getFreeCellsCount();
 
   // 1) akceleracce
   if (rand() < RAND_MAX*acceleration_probability && current_speed < max_speed
-    && dist > current_speed + 1) {
+    && free_cells > current_speed) {
 
     current_speed++;
   }
 
-  // 2) zpomaleni
-  if (current_speed >= dist) {
-    current_speed = dist - 1;
+  // 2) pokud je predchozi auto vzdalene mene nez je aktualni rychlost, vozidlo
+  // zpomali tak, aby nedoslo ke srazce
+  if (current_speed > free_cells) {
+    current_speed = free_cells;
   }
 
   // 3) randomizace - zpomaleni
@@ -97,12 +99,12 @@ void Car::move() {
 
 }
 
-void Car::start(Track *track, Car *car_in_front, Cell *first_cell) {
+void Car::enterTrack(Track *track) {
 
   this->track = track;
-  this->car_in_front = car_in_front;
+  this->car_in_front = track->getLastCar();
   this->time_in = track->getCurrentTime();
-  this->cell = first_cell;
+  this->cell = track->getFirstCell();
 
   // posune auto o pocet bunek dopredu
   advanceCells(length);

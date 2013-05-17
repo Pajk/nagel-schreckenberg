@@ -14,10 +14,19 @@
 #include "cell.h"
 
 #ifdef GUI
-#include <allegro.h>
+  #include <allegro.h>
 
-BITMAP *buffer;
-int screen_width;
+  BITMAP *buffer;
+  int screen_width;
+  int screen_height;
+  #define LINE_HEIGHT 2
+#endif
+
+// carfactory
+// 1 - simple
+// 2 - csv car factory
+#ifndef CARFACTORY
+  #define CARFACTORY 1
 #endif
 
 void initAllegro(int);
@@ -67,13 +76,16 @@ int main(int argc, char **argv) {
 
   statistics = new Statistics();
 
-  //CarFactory *car_factory = new SimpleCarFactory(config);
-  if (argc >=3) {
-    car_factory = new CsvCarFactory(argv[2], config, statistics);
-    std::cout << "Samples loaded from '" << argv[2] << "'.\n";
-  } else {
-    car_factory = new CsvCarFactory("data/samples.csv", config, statistics);
-  }
+  #if CARFACTORY==1
+    CarFactory *car_factory = new SimpleCarFactory(config, statistics);
+  #elif CARFACTORY==2
+    if (argc >=3) {
+      car_factory = new CsvCarFactory(argv[2], config, statistics);
+      std::cout << "Samples loaded from '" << argv[2] << "'.\n";
+    } else {
+      car_factory = new CsvCarFactory("data/samples.csv", config, statistics);
+    }
+  #endif
 
   const int track_length = config->getNumberOfTrackCells();
 
@@ -85,52 +97,100 @@ int main(int argc, char **argv) {
 
   #ifdef GUI
 
-    BITMAP *b;
-    int colors[] = { makecol(255,0,0), makecol(0,255,0), makecol(0,0,255),
-      makecol(255,0,255), makecol(0,255,255), makecol(255, 255, 0)
+    BITMAP * buffer2 = create_bitmap(screen_width, screen_height);
+
+    int colors[] = {
+      makecol(255,0,0),
+      makecol(100,0,0),
+      makecol(100,100,0),
+      makecol(0,200,0),
+      makecol(0,255,0),
+      makecol(0, 0, 255),
+      makecol(255, 0, 0),
+      makecol(255, 0, 0),
+      makecol(255, 0, 0)
     };
 
-    bool running = true;
+    bool running = true, stop = false;
+    clear_to_color(screen, makecol(255, 255, 255));
 
     while (!key[KEY_ESC] && track->isLive()) {
 
       if (running) {
-        clear_to_color(buffer, makecol(0, 0, 0));
         track->step();
+
+        unsigned long long current_time = track->getCurrentTime();
+        int offset = (current_time*LINE_HEIGHT)%(screen_height-LINE_HEIGHT);
+
+        if (offset == 0) {
+          if (stop) {
+            stop = false;
+            running = false;
+            continue;
+          }
+          clear_to_color(screen, makecol(255, 255, 255));
+        }
+        clear_to_color(buffer, makecol(255, 255, 255));
+        clear_to_color(buffer2, makecol(255, 255, 255));
+        // std::cout << offset << std::endl;
 
         /**
          * Vykresleni cesty
          */
-        Cell * tmp = track->getFirstCell();
-        while (tmp) {
-          if (tmp->isOccupied()) {
-            int car_class = tmp->getCar()->getCarClass();
+        Cell * cell = track->getFirstCell();
+        while (cell != NULL) {
+          if (cell->isOccupied()) {
 
-            line(buffer, tmp->getPosition(), 0, tmp->getPosition(), 10,
-              colors[car_class%5]);
+            line(buffer, cell->getPosition(), 0, cell->getPosition(), LINE_HEIGHT,
+              makecol(0,0,0));
+              // makecol((255/(cell->getCar()->getCurrentSpeed()+1)), (cell->getCar()->getCurrentSpeed()-1)*30, 0));
+              // colors[cell->getCar()->getCurrentSpeed()-1]);
 
+            std::cout << cell->getCar()->getCurrentSpeed();
+          } else {
+            std::cout << '.';
           }
-          tmp = tmp->getCellFront();
+          cell = cell->getCellFront();
         }
-
-        b = create_bitmap(screen_width, 10);
-        stretch_blit(buffer, b, 0, 0, buffer->w, buffer->h, 0, 0, b->w, b->h);
-        blit(b, screen, 0, 0, 0, 0, screen_width, 10);
-        destroy_bitmap(b);
+        std::cout << std::endl;
+        stretch_blit(buffer, buffer2, 0, 0, buffer->w, buffer->h, 0, 0, buffer2->w, buffer2->h);
+        blit(buffer2, screen, 0, 0, 0, offset, screen_width, LINE_HEIGHT);
+      } else {
+        rest(40);
       }
 
       if (key[KEY_SPACE]) {
         if (should_execute(KEY_SPACE)) {
-          running = !running;
           if (running) {
-            cout << "Running\n";
+            stop = true;
+            cout << "Stop\n";
           } else {
-            cout << "Stopped\n";
+            running = true;
+            clear_to_color(screen, makecol(255, 255, 255));
+            cout << "Run\n";
           }
         }
       }
+    }
+    destroy_bitmap(buffer2);
 
-      rest(10);
+  #elif ASCII
+
+    while (track->isLive()) {
+
+      track->step();
+      Cell * cell = track->getFirstCell();
+
+      while (cell != NULL) {
+
+        if (cell->isOccupied()) {
+          std::cout << cell->getCar()->getCurrentSpeed();
+        } else {
+          std::cout << '.';
+        }
+        cell = cell->getCellFront();
+      }
+      std::cout << std::endl;
     }
 
   #else
@@ -160,25 +220,31 @@ END_OF_MAIN()
 
 void initAllegro(int width) {
 
-  int depth, res, h;
+  int depth, res;
   allegro_init();
   depth = desktop_color_depth();
 
   // ziskani rozliseni obrazovky, pokud nelze, nastavi se default sirka
-  if (get_desktop_resolution(&screen_width, &h) != 0) screen_width = 1440;
-  if (screen_width > 1300) screen_width = 1300;
+  if (get_desktop_resolution(&screen_width, &screen_height) != 0) {
+    screen_width = 1000;
+    screen_height = 200 * LINE_HEIGHT;
+  }
+  // pokud je pripojeno vice monitoru, nechceme zobrazovat na vsech, omezeni na full hd
+  if (screen_width > 1980) screen_width = 1980;
   if (depth == 0) depth = 32;
+  screen_width -= 100;
+  screen_height -= 100;
+
   set_color_depth(depth);
-  res = set_gfx_mode(GFX_AUTODETECT_WINDOWED, screen_width, 10, 0, 0);
+  res = set_gfx_mode(GFX_AUTODETECT_WINDOWED, screen_width, screen_height, 2*screen_width, 0);
   if (res != 0) {
     exit(-1);
   }
 
-
   install_timer();
   install_keyboard();
   set_keyboard_rate(0, 0);
-  buffer = create_bitmap(width, 10);
+  buffer = create_bitmap(width, LINE_HEIGHT);
 }
 
 void deinitAllegro() {

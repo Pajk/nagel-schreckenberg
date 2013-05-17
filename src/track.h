@@ -9,8 +9,9 @@ struct tm;
 class Track {
 
   int length,
-      number_of_cars,
-      sim_time;
+      number_of_cars;
+
+  unsigned long long sim_time;
 
   Car * last_car,
       * next_car,    // auto, ktere ma vjet na cestu jako dalsi v poradi
@@ -28,6 +29,7 @@ class Track {
   CarFactory *car_factory;
 
   public:
+
     Track(CarFactory *car_factory, int length);
     ~Track();
 

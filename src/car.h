@@ -19,7 +19,7 @@ class Car {
       old_position,
       length;
 
-  long time_in;
+  unsigned long long time_in;
 
   float slowdown_probability,
         acceleration_probability;
@@ -42,24 +42,42 @@ class Car {
 
     int getCurrentSpeed() { return current_speed; }
     int getId() { return id; }
-    int getMaximumSpeed() { return max_speed; }
     int getExpectedTime() { return expected_time; }
     int getCarClass() { return car_class; }
     Car * getCarInFront() { return car_in_front; }
     Car * getCarBehind() { return car_behind; }
     int getPosition() { return position; }
     int getBackPosition() { return position - length; }
-    long getTimeIn() { return time_in; }
+    unsigned long long getTimeIn() { return time_in; }
     long getExpectedTimeOut() { return time_in + expected_time; }
     int getLength() { return length; }
-    Cell * getOccupiedCell() { return cell; }
 
     void setCarInFront(Car *car) { car_in_front = car; }
     void setCarBehind(Car *car) { car_behind = car; }
     void setTimeIn(long time) { time_in = time; }
     void setExpectedTime(int time) { expected_time = time; }
 
-    int getDistance() {
+    /**
+     * Vozidlo vjede na zadanou vozovku
+     */
+    void enterTrack(Track *track);
+
+    /**
+     * Vozidlo vykona jeden krok simulace, dojde k vypocitani nove rychlosti
+     * a posunu vozidla na novou pozici
+     */
+    void step();
+
+  protected:
+
+    void advanceCells(int cells);
+
+    void loadCarConfig();
+
+    /**
+     * Vrati pocet volnych bunek pred autem
+     */
+    int getFreeCellsCount() {
       if (car_in_front)
         // pred autem jede jine auto, vrati se vzdalenost od posledni
         // bunky, kterou auto zabira
@@ -70,11 +88,6 @@ class Car {
         // auto schopne vyjet z vozovky
         return track->getLength() - position + 10;
     }
-
-    void start(Track *track, Car *car_in_front, Cell *first_cell);
-    void move();
-    void loadCarConfig();
-    void advanceCells(int cells);
 };
 
 #endif

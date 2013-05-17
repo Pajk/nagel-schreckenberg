@@ -80,7 +80,7 @@ void Track::step() {
    * - na vozovce je dostatek mista pro vjizdejici auto
    */
   if (isEnterAllowed(next_car)) {
-    next_car->start(this, last_car, first_cell);
+    next_car->enterTrack(this);
     // std::cout << sim_time << " " << next_car->getTimeIn() << std::endl;
     last_car = next_car;
     next_car = NULL;
@@ -95,7 +95,7 @@ void Track::step() {
   Car *tmp_car;
   while (car) {
     tmp_car = car->getCarInFront();
-    car->move();
+    car->step();
     car = tmp_car;
   }
 
@@ -122,12 +122,20 @@ void Track::step() {
   }
 }
 
+/**
+ * Zkontroluje zda jsou splneny vsechny podminky pro to, aby vozidlo
+ * mohlo vjet na vozovku
+ */
 bool Track::isEnterAllowed(Car * car) {
   return car &&
     (!last_car || (last_car->getBackPosition() > car->getLength())) &&
     car->getTimeIn() <= sim_time;
 }
 
+/**
+ * Zjisti zda je trat "ziva", tzn zda na ni jsou nejaka vozidla
+ * nebo nejaka cekaji ve fronte.
+ */
 bool Track::isLive() {
   return (next_car || last_car) ? true : false;
 }

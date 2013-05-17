@@ -11,20 +11,18 @@ class Cell {
   Car * car;
 
   Cell * cell_front,
-       * cell_back,
-       * cell_left,
-       * cell_right;
+       * cell_back;
 
   public:
 
-    Cell(int cell_position)
-      : position(cell_position), car(NULL), cell_front(NULL), cell_back(NULL),
-        cell_left(NULL), cell_right(NULL) {}
+    Cell(int cell_position) :
+      position(cell_position),
+      car(NULL),
+      cell_front(NULL),
+      cell_back(NULL) {}
 
     Cell * getCellFront() { return cell_front; }
     Cell * getCellBack() { return cell_back; }
-    Cell * getCellLeft() { return cell_left; }
-    Cell * getCellRight() { return cell_right; }
 
     Car * getCar() { return car; }
     void setCar(Car * car) { this->car = car; }
@@ -35,8 +33,6 @@ class Cell {
 
     void setCellFront(Cell * cell) { cell_front = cell; }
     void setCellBack(Cell * cell) { cell_back = cell; }
-    void setCellLeft(Cell * cell) { cell_left = cell; }
-    void setCellRight(Cell * cell) { cell_right = cell; }
 
     int getPosition() { return position; }
 };

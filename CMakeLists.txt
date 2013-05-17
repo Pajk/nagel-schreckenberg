@@ -10,6 +10,9 @@ set(TESTS tests/config_test.cc tests/track_test.cc)
 add_executable(bin/nasch src/main.cc ${SOURCES})
 target_link_libraries(bin/nasch)
 
+add_executable(bin/ascii-nasch src/main.cc ${SOURCES})
+set_target_properties(bin/ascii-nasch PROPERTIES COMPILE_DEFINITIONS "ASCII=1")
+
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
 find_package(GAlib)

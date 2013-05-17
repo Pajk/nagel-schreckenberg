@@ -5,8 +5,13 @@
 
 Car *SimpleCarFactory::nextCar() {
 
-  int car_class = rand()%(config->getNumberOfCarTypes()-1);
+  int car_types = config->getNumberOfCarTypes();
+  if (car_types > 1) car_types--;
+  int car_class = rand()%car_types;
   Car *car = new Car(current_id++, car_class, config, statistics);
+
+  car->setTimeIn(0);
+  car->setExpectedTime(0);
 
   return car;
 }
