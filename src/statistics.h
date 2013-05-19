@@ -13,28 +13,41 @@ struct CarTime {
   long left_at;
 };
 
-class Statistics {
-
-  std::vector<CarTime> car_times;
-
+struct Summary {
+  long t_from;
+  long t_to;
   float mae;
   float mape;
   float rmse;
   float flow;
   float density;
-  float faster_mean_error;
-  float slower_mean_error;
+  float mean_speed;
+  int cars;
   int min_error;
   int max_error;
-  int slower_cars;
   int faster_cars;
+  int slower_cars;
+  float faster_mae;
+  float slower_mae;
   float mean_travel_time;
   float mean_expected_travel_time;
+};
+
+class Statistics {
+
+  std::vector<CarTime> car_times;
+  std::vector<Summary> history;
+  Summary interval_data;
+  Summary summary_data;
 
   long time_from;
-  long time_to;
-  // pocet kroku simulace, ve kterem byla sledovana bunka obsazena
+
+  // citac poctu kroku simulace, ve kterem byla obsazena jedna vybrana bunka
+  // z teto hodnoty se pak vypocita hustota dopravy
   long cell_time_occupied;
+
+  // zde se postupne v kazdem kroku pricita sledovana prumerna rychlost na vozovce
+  // z teto hodnoty je pak vypocitana prumerna rychlost v casovem useku
   float mean_speed;
 
   /**
@@ -44,9 +57,15 @@ class Statistics {
    */
   bool table_format;
 
+  /**
+   * Pokud je true, netisknou se na vystup progromau statistiky jednotilivych
+   * intervalu
+   */
+  bool suppress_output;
+
   public:
 
-    Statistics(bool table_format = false);
+    Statistics(bool table_format = false, bool suppress_output = false);
 
     /**
      * Vynulovani vsech statistik a smazani nasbiranych dat
@@ -77,20 +96,19 @@ class Statistics {
     void logCellOccupancy(bool occupied);
     void logMeanSpeed(float mean_speed);
 
-    float getMeanAbsoluteError() { return mae; }
-    float getMeanAbsolutePercentageError() { return mape; }
-    float getRootMeanSquareError() { return rmse; }
-    float getSlowerMeanError() { return slower_mean_error; }
-    float getFasterMeanError() { return faster_mean_error; }
-    float getMeanTravelTime() { return mean_travel_time; }
-    float getMeanExpectedTravelTime() { return mean_expected_travel_time; }
-    float getFlow() { return flow; }
-    float getDensity() { return density; }
-    float getMeanSpeed() { return mean_speed; }
-    int getMaxError() { return max_error; }
-    int getMinError() { return min_error; }
-    int getSlowerCars() { return slower_cars; }
-    int getFasterCars() { return faster_cars; }
+    struct Summary getIntervalData() { return interval_data; }
+    struct Summary getSummaryData() { return summary_data; }
+
+    void summaryCalculate();
+    void summaryPrint();
+    void summaryReset();
+
+    void summaryCalculateAndPrint() {
+      summaryCalculate();
+      summaryPrint();
+    }
+
+    void printHeader();
 };
 
 #endif

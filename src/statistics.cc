@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cmath>
 #include <iomanip>
+#include <cstring>
 
 #include "statistics.h"
 #include "car.h"
@@ -9,163 +10,142 @@ using std::endl;
 using std::cout;
 using std::setw;
 using std::setprecision;
+using std::vector;
 
-Statistics::Statistics(bool table_format) {
+Statistics::Statistics(bool table_format, bool suppress_output) {
     reset();
+    summaryReset();
     this->table_format = table_format;
-    if (table_format) {
-        cout << " t_from,   t_to,     MAE,    MAPE,   flow, density, cars,  speed\n";
-    }
+    this->suppress_output = suppress_output;
+    if (table_format && !suppress_output) printHeader();
 }
 
 void Statistics::reset(long time_from) {
 
     this->time_from = time_from;
-    mae = 0;
-    mape = 0;
-    rmse = 0;
-    flow = 0;
-    density = 0;
-    faster_mean_error = 0;
-    slower_mean_error = 0;
-    min_error = 0;
-    max_error = 0;
-    slower_cars = 0;
-    faster_cars = 0;
-    mean_travel_time = 0;
     cell_time_occupied = 0;
     mean_speed = 0;
-    mean_expected_travel_time = 0;
     car_times.clear();
+    memset(&interval_data, 0, sizeof(interval_data));
 }
 
 void Statistics::logCarTime(long current_time, Car * car) {
 
     int total_time = current_time - car->getTimeIn();
-    CarTime time;
-    time.car_id = car->getId();
-    time.total_time = total_time;
-    time.expected_time = car->getExpectedTime();
-    time.left_at = current_time;
-    car_times.push_back(time);
+    CarTime ct;
+    ct.car_id = car->getId();
+    ct.total_time = total_time;
+    ct.expected_time = car->getExpectedTime();
+    ct.left_at = current_time;
+    car_times.push_back(ct);
 }
 
 void Statistics::calculate(long time_to) {
 
-    int slower_error_sum = 0,
-        faster_error_sum = 0,
-        abs_err = 0;
+    int abs_err = 0;
 
-    min_error = 9999;
-    max_error = -1;
-    slower_cars = faster_cars = 0;
+    interval_data.min_error = 9999;
+    interval_data.max_error = -1;
+    interval_data.t_to = time_to;
+    interval_data.t_from = time_from;
 
-    mean_travel_time = mean_expected_travel_time = mae = rmse = flow = 0;
-    CarTime ct;
-    this->time_to = time_to;
+    for (vector<CarTime>::iterator it = car_times.begin(); it != car_times.end(); ++it) {
 
-    for (std::vector<CarTime>::iterator it = car_times.begin(); it != car_times.end(); ++it) {
-
-        ct = *it;
+        CarTime &ct = *it;
         // cout << ct.car_id << " expected:" << ct.expected_time << " simulated:" << ct.total_time << " left_at:" << ct.left_at << endl;
+
+        // pokud je k dispozici ocekavany cas dojezdu pro konkretni vozidla
+        // vypocita se chyba simulace
 
         if (ct.expected_time > 0) {
             abs_err = abs(ct.total_time - ct.expected_time);
-
-            if (min_error > abs_err) min_error = abs_err;
-            if (max_error < abs_err) max_error = abs_err;
-
+            if (interval_data.min_error > abs_err) interval_data.min_error = abs_err;
+            if (interval_data.max_error < abs_err) interval_data.max_error = abs_err;
             if (ct.total_time > ct.expected_time) {
-                slower_cars++;
-                slower_error_sum += abs_err;
+                interval_data.slower_cars++;
+                interval_data.slower_mae += abs_err;
             } else {
-                faster_cars++;
-                faster_error_sum += abs_err;
+                interval_data.faster_cars++;
+                interval_data.faster_mae += abs_err;
             }
 
-            mean_travel_time += ct.total_time;
-            mean_expected_travel_time += ct.expected_time;
+            interval_data.mean_travel_time += ct.total_time;
+            interval_data.mean_expected_travel_time += ct.expected_time;
 
-            mape += float(abs_err) / ct.expected_time;
-            mae += abs_err;
-            rmse += pow(abs_err, 2);
+            interval_data.mae += abs_err;
+            interval_data.mape += float(abs_err) / ct.expected_time;
+            interval_data.rmse += pow(abs_err, 2);
         }
     }
-    float cars_size = car_times.size();
+    interval_data.cars = car_times.size();
 
     // vypocet dopravni toku pro dany casovy interval
-    long interval = time_to - time_from;
-    flow = float(car_times.size()) / interval;
+    long interval = interval_data.t_to - interval_data.t_from;
+    interval_data.flow = float(interval_data.cars) / interval;
 
     // vypocet hustoty dopravy
-    density = float(cell_time_occupied) / interval;
+    interval_data.density = float(cell_time_occupied) / interval;
 
     // vypocet prumerne rychlosti
-    mean_speed = mean_speed / float(interval);
+    interval_data.mean_speed = mean_speed / interval;
 
-    if (cars_size > 0) {
-        mean_travel_time = mean_travel_time/cars_size;
-        mean_expected_travel_time = mean_expected_travel_time/cars_size;
-        mape = mape/cars_size*100;
-        mae = mae/cars_size;
-        rmse = sqrt(rmse/cars_size);
-    } else {
-        mae = 99999;
+    // vypocet prumerne chyby
+    if (interval_data.cars > 0) {
+        float cars = interval_data.cars;
+        interval_data.mean_travel_time /= cars;
+        interval_data.mean_expected_travel_time /= cars;
+        interval_data.mape /= cars;
+        interval_data.mape *= 100.0;
+        interval_data.mae /= cars;
+        interval_data.rmse = sqrt(interval_data.rmse/cars);
     }
 
-    // cout << "Mean travel time: " << mean_travel_time << endl
-    //     << "Expected mean travel time: " << mean_expected_travel_time << endl
-    //     << "Summary times error: " << fabs(mean_travel_time - mean_expected_travel_time) << endl
-    //     << "MAE: " << mae << endl
-    //     << "MAPE: " << mape << endl
-    //     << "RMSE: " << rmse << endl;
-
-    if (slower_cars > 0) {
-        slower_mean_error = float(slower_error_sum)/float(slower_cars);
-    } else {
-        slower_mean_error = 99999;
+    if (interval_data.slower_cars > 0) {
+        interval_data.slower_mae /= interval_data.slower_cars;
     }
 
-    if (faster_cars > 0) {
-        faster_mean_error = float(faster_error_sum)/float(faster_cars);
-    } else {
-        faster_mean_error = 99999;
+    if (interval_data.faster_cars > 0) {
+        interval_data.faster_mae /= interval_data.faster_cars;
     }
+
+    // ulozeni vypocitanych dat do vektoru historie
+    history.push_back(interval_data);
 }
 
 void Statistics::print() {
 
-    if (car_times.size() == 0) {
+    if (interval_data.cars == 0 || suppress_output) {
         return;
     }
 
     if (table_format) {
         // "t_from t_to   MAE     MAPE    flow   density cars  speed"
         cout << std::fixed
-             << setw(7) << time_from << ','
-             << setw(7) << time_to << ','
-             << setw(8) << setprecision(2) << mae << ','
-             << setw(8) << setprecision(2) << mape << ','
-             << setw(7) << setprecision(3) << flow << ','
-             << setw(8) << setprecision(3) << density << ','
-             << setw(5) << car_times.size() << ','
-             << setw(7) << setprecision(2) << mean_speed << endl;
+             << setw(7) << interval_data.t_from << ','
+             << setw(7) << interval_data.t_to << ','
+             << setw(8) << setprecision(2) << interval_data.mae << ','
+             << setw(8) << setprecision(2) << interval_data.mape << ','
+             << setw(7) << setprecision(3) << interval_data.flow << ','
+             << setw(8) << setprecision(3) << interval_data.density << ','
+             << setw(5) << interval_data.cars << ','
+             << setw(7) << setprecision(2) << interval_data.mean_speed << endl;
 
              // <<  << fixed << setprecision(2) << loop.price / 100.0
     } else {
-        cout << car_times.size() << " cars" << endl
-            << "mean absolute error: " << getMeanAbsoluteError() << "s" << endl
-            << "mean absolute percentage error: " << getMeanAbsolutePercentageError() << "%" << endl
-            << "traffic flow: " << getFlow() << endl
-            << "traffic density: " << getDensity() << endl
-            << "mean speed: " << getMeanSpeed() << endl
-            << "number of cars: " << car_times.size() << endl
-            << "min error: " << getMinError() << "s" << endl
-            << "max error: " << getMaxError() << "s" << endl
-            << "slower than expected: " << getSlowerCars()
-            << ", mean error: " << getSlowerMeanError() << endl
-            << "faster than expected: " << getFasterCars() << endl
-            << ", mean error: " << getFasterMeanError() << endl;
+        cout << "====================================\n"
+            << interval_data.cars << " cars" << endl
+            << "mean absolute error: " << interval_data.mae << "s" << endl
+            << "mean absolute percentage error: " << interval_data.mape << "%" << endl
+            << "traffic flow: " << interval_data.flow << endl
+            << "traffic density: " << interval_data.density << endl
+            << "mean speed: " << interval_data.mean_speed << endl
+            << "number of cars: " << interval_data.cars << endl
+            << "min error: " << interval_data.min_error << "s" << endl
+            << "max error: " << interval_data.max_error << "s" << endl
+            << "slower than expected: " << interval_data.slower_cars
+            << ", mean error: " << interval_data.slower_mae << endl
+            << "faster than expected: " << interval_data.faster_cars
+            << ", mean error: " << interval_data.faster_mae << endl;
     }
 }
 
@@ -177,4 +157,75 @@ void Statistics::logCellOccupancy(bool occupied) {
 
 void Statistics::logMeanSpeed(float mean_speed) {
     this->mean_speed += mean_speed;
+}
+
+void Statistics::summaryCalculate() {
+
+    vector<Summary>::iterator it = history.begin();
+
+    summary_data.t_from = (*it).t_from;
+    summary_data.min_error = (*it).min_error;
+    summary_data.max_error = (*it).max_error;
+
+    for (; it != history.end(); ++it) {
+
+        summary_data.mae += (*it).mae;
+        summary_data.mape += (*it).mape;
+        summary_data.rmse += (*it).rmse;
+        summary_data.flow += (*it).flow;
+        summary_data.density += (*it).density;
+        summary_data.mean_speed += (*it).mean_speed;
+        summary_data.cars += (*it).cars;
+        summary_data.faster_cars += (*it).faster_cars;
+        summary_data.slower_cars += (*it).slower_cars;
+        summary_data.faster_mae += (*it).faster_mae;
+        summary_data.slower_mae += (*it).slower_mae;
+        summary_data.mean_travel_time += (*it).mean_travel_time;
+        summary_data.mean_expected_travel_time += (*it).mean_expected_travel_time;
+    }
+
+    --it;
+    summary_data.t_to = (*it).t_to;
+
+    int size = history.size();
+
+    summary_data.mae /= size;
+    summary_data.mape /= size;
+    summary_data.rmse /= size;
+    summary_data.flow /= size;
+    summary_data.density /= size;
+    summary_data.mean_speed /= size;
+    summary_data.cars /= size;
+    summary_data.faster_cars /= size;
+    summary_data.slower_cars /= size;
+    summary_data.faster_mae /= size;
+    summary_data.slower_mae /= size;
+    summary_data.mean_travel_time /= size;
+    summary_data.mean_expected_travel_time /= size;
+}
+
+void Statistics::summaryPrint() {
+
+    struct Summary tmp = interval_data;
+    bool stmp = suppress_output;
+    interval_data = summary_data;
+    if (!suppress_output) {
+        cout << "================================================================\n";
+    } else {
+        printHeader();
+    }
+    suppress_output = false;
+    print();
+    interval_data = tmp;
+    suppress_output = stmp;
+}
+
+void Statistics::summaryReset() {
+
+    memset(&summary_data, 0, sizeof(summary_data));
+    history.clear();
+}
+
+void Statistics::printHeader() {
+    cout << " t_from,   t_to,     MAE,    MAPE,   flow, density, cars,  speed\n";
 }

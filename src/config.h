@@ -8,7 +8,7 @@
 #define BITS_CELL_LENGTH 4
 
 #define BITS_CAR_LENGTH 4
-#define BITS_MAX_SPEED 4
+#define BITS_MAX_SPEED 5
 #define BITS_MIN_SPEED 4
 #define BITS_SLOWDOWN_P 7
 #define BITS_ACC_P 7
@@ -20,13 +20,13 @@
 
 // krajni hodnoty jednotlivych nastaveni
 #define CELL_LENGTH_L 1
-#define CELL_LENGTH_R 8
+#define CELL_LENGTH_R 10
 
 #define CAR_LENGTH_L 5
 #define CAR_LENGTH_R 20
 
 #define MAX_SPEED_L 10
-#define MAX_SPEED_R 60
+#define MAX_SPEED_R 120
 
 #define MIN_SPEED_L 0
 #define MIN_SPEED_R 10
@@ -117,6 +117,7 @@ class Config {
 
     void setTrackLength(int track_length) { this->track_length = track_length; }
     void setSiteLength(float site_length) { this->site_length = site_length; }
+    void setTableFormat(bool table_format) { this->table_format = table_format; }
 };
 
 #endif

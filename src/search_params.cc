@@ -19,12 +19,6 @@ using namespace std;
 
 // ============================ parametry evoluce =============================
 
-// toto nastaveni je pretizeno hodnotami v souboru ga_params.txt
-const int popsize = 100;      // velikost populace
-const int ngens = 200;       // max pocet generaci
-const float pmut = 0.3;       // pravdepodobnost mutace
-const float pcross = 0.1;     // krizeni
-
 CsvCarFactory *car_factory;
 
 // nazev souboru, do ktere se ulozi nejlepsi nalezene reseni:
@@ -43,85 +37,17 @@ CsvCarFactory *car_factory;
 #endif
 
 #ifndef CAR_TYPES
-    #define CAR_TYPES 6
+    #define CAR_TYPES 5
 #endif
 
 #ifndef DEFAULT_CAR
     #define DEFAULT_CAR 0
 #endif
 
-// =========================== fitness funkce =================================
+float Objective(GAGenome & g);
+int MultiPointCrossover(const GAGenome& p1, const GAGenome& p2, GAGenome* c1, GAGenome* c2);
 
-float Fitness(GAGenome& g) {
-
-    GA1DBinaryStringGenome &genome = (GA1DBinaryStringGenome &)g;
-
-    // #ifdef DEBUG
-    // cout << "======================================================" << endl;
-    // #endif
-
-    Config *config = new Config();
-    config->loadFromGABinaryString(genome, DEFAULT_CAR);
-
-    // #ifdef DEBUG
-    // cout << endl;
-    // config->print();
-    // #endif
-
-    Statistics *statistics = new Statistics();
-    car_factory->resetIterator();
-    car_factory->setConfig(config);
-
-    Track *track = new Track(config, car_factory);
-    World world(statistics, config);
-    world.addTrack(track);
-
-    while (track->isLive()) {
-        track->step();
-    }
-
-    // float fitness = statistics->getMeanError();
-    float fitness = fabs(statistics->getMeanTravelTime() - statistics->getMeanExpectedTravelTime());
-
-    #ifdef DEBUG
-    cout << "== FITNESS: " << fitness << endl;
-    // statistics->print();
-    #endif
-
-    delete track;
-    delete config;
-    delete statistics;
-
-    return fitness;
-}
-
-int
-SinglePointCrossover(const GAGenome& p1, const GAGenome& p2, GAGenome* c1, GAGenome* c2){
-  GA1DBinaryStringGenome &mom=(GA1DBinaryStringGenome &)p1;
-  GA1DBinaryStringGenome &dad=(GA1DBinaryStringGenome &)p2;
-
-  int n=0;
-  unsigned int site = 4;
-  unsigned int len = mom.length() - site;
-
-  if(c1){
-    GA1DBinaryStringGenome &sis=(GA1DBinaryStringGenome &)*c1;
-    sis.copy(mom, 0, 0, site);
-    sis.copy(dad, site, site, len);
-    n++;
-  }
-  if(c2){
-    GA1DBinaryStringGenome &bro=(GA1DBinaryStringGenome &)*c2;
-    bro.copy(dad, 0, 0, site);
-    bro.copy(mom, site, site, len);
-    n++;
-  }
-
-  return n;
-}
-
-
-// ============================ rizeni evoluce ==============================
+//== Rizeni evoluce ============================================================
 
 /** genetic operators for this class
  * GA1DBinaryStringGenome::UniformInitializer
@@ -145,9 +71,11 @@ int main(int argc, char **argv) {
     srand(time(NULL)*getpid());
     GARandomSeed(time(NULL)*getpid());
 
-    // genom - matice parametru modelu, 4  bity pro nastaveni delky trate
-    // 26 bitu pro nastaveni kazdeho typu vozidla
-    GA1DBinaryStringGenome genom(BITS_TRACK + CAR_TYPES * BITS_CAR, Fitness);
+    /**
+     * vytvoreni genomi - matice parametru modelu,
+     * makra s poctem bitu jednotlivych parametru jsou definovana v config.h
+     */
+    GA1DBinaryStringGenome genome(BITS_TRACK + CAR_TYPES * BITS_CAR, Objective);
 
     if (argc >= 2) {
         car_factory = new CsvCarFactory(argv[1]);
@@ -157,76 +85,193 @@ int main(int argc, char **argv) {
     }
 
     // nastaveni genetickych operatoru
-    //genom.initializer(Initializer);
     //genom.mutator(Mutation);
-    //genom.crossover(SinglePointCrossover);
+
+    // nastaveni metody krizeni
+    genome.crossover(MultiPointCrossover);
 
     // vytvoreni ga
     #if GA == 1
-        GASimpleGA ga(genom);
+        GASimpleGA ga(genome);
     #elif GA == 2
-        GASteadyStateGA ga(genom);
-        // ga.pReplacement(0.9);
+        GASteadyStateGA ga(genome);
     #elif GA == 3
-        GADemeGA ga(genom);
+        GADemeGA ga(genome);
     #endif
-
-    // ga.populationSize(popsize);
-    // ga.nGenerations(ngens);
-    // ga.pCrossover(pcross);
-    // ga.pMutation(pmut);
 
     ga.minimize();
 
-    // GATournamentSelector selector;
-    // ga.selector(selector);
+    GATournamentSelector selector;
+    ga.selector(selector);
+
+    // pouzijeme sigma truncation skalovani
+    GASigmaTruncationScaling scaling;
+    ga.scaling(scaling);
 
     // moznost nastaveni parametru ze souboru a pres argumenty prikazove radky
     ga.parameters("data/ga_params.txt", gaTrue);
-    ga.parameters(argc,argv);
+    ga.parameters(argc, argv);
 
     // start evolucniho procesu
-    ga.initialize();
-    while (!ga.done()) {
+    // ga.initialize();
+    // while (!ga.done()) {
+    //     ++ga;
+    //     // if ((ga.statistics().generation() % ga.scoreFrequency()) == 0) {
+    //         cout << "Generace " << ga.statistics().generation()
+    //              << " - Nejlepsi fitness: " << ga.population().max() << endl;
 
-        ++ga;
-        if ((ga.statistics().generation() % ga.scoreFrequency()) == 0) {
-            cout << "Generace " << ga.statistics().generation()
-                 << " - Nejlepsi fitness: " << ga.population().min() << endl;
+    //             GA1DBinaryStringGenome& g = (GA1DBinaryStringGenome&)ga.statistics().bestIndividual();
 
-                GA1DBinaryStringGenome& genome = (GA1DBinaryStringGenome&)ga.statistics().bestIndividual();
+    //             Config *config = new Config();
+    //             config->loadFromGABinaryString(g, DEFAULT_CAR);
+    //             config->print();
+    //     // }
 
-                Config *config = new Config();
-                config->loadFromGABinaryString(genome, DEFAULT_CAR);
-                config->print();
-        }
+    //     if (ga.population().max() == 100.0)
+    //         break;
+    // }
 
-        if (ga.population().min() == 0)
-            break;
-    }
+    ga.evolve();
     ga.flushScores();
 
-    #ifdef TEST
-        cout << ga.generation() << " " << ga.statistics().bestIndividual().score() << endl;
-    #else
-        // tisk statistik
-        cout << endl << "Statistika:" << endl;
-        cout << ga.statistics() << endl;
+    // tisk vysledku
+    cout << ga.statistics() << endl;
+    cout << "Nejlepsi reseni: " << ga.statistics().bestIndividual() << endl
+         << "Fitness = " << ga.population().max() << endl;
 
-        cout << "Nejlepsi reseni: " << ga.statistics().bestIndividual() <<
-                ", Fitness = " << ga.population().min() << endl;
-
-        // tisk nejlepsiho jedince do souboru
-        ofstream file(OUTPUT_FILE);
-        file << ga.statistics().bestIndividual() << endl;
-    #endif
+    // tisk nejlepsiho jedince do souboru
+    ofstream file(OUTPUT_FILE);
+    file << ga.statistics().bestIndividual() << endl;
 
     // tisk nejlepsiho reseni
-    GA1DBinaryStringGenome& genome = (GA1DBinaryStringGenome&)ga.statistics().bestIndividual();
+    GA1DBinaryStringGenome& g = (GA1DBinaryStringGenome&)ga.statistics().bestIndividual();
 
     Config *config = new Config();
-    config->loadFromGABinaryString(genome, DEFAULT_CAR);
+    config->loadFromGABinaryString(g, DEFAULT_CAR);
     config->print();
 
     return 0;
+}
+
+//== Hodnotici funkce ==========================================================
+float
+Objective(GAGenome& g) {
+
+    GA1DBinaryStringGenome &genome = (GA1DBinaryStringGenome &)g;
+
+    // #ifdef DEBUG
+    // cout << "======================================================" << endl;
+    // #endif
+
+    Config *config = new Config();
+    config->loadFromGABinaryString(genome, DEFAULT_CAR);
+
+    Statistics *statistics = new Statistics(true, true);
+    car_factory->resetIterator();
+    car_factory->setConfig(config);
+
+    Track track(config, car_factory);
+    World world(statistics, config);
+    world.addTrack(&track);
+
+    while (world.isLive()) {
+        world.step();
+    }
+
+    statistics->summaryCalculate();
+    Summary stats = statistics->getSummaryData();
+    float objective = stats.mape;
+
+    #ifdef DEBUG
+    cout << "\n==================================================================\n";
+    cout << "== OBJECTIVE: " << objective << endl;
+    // config->print();
+    statistics->summaryPrint();
+    #endif
+
+    // delete track;
+    delete config;
+    delete statistics;
+
+    return objective;
+}
+
+//== Vicebodove krizeni ========================================================
+int
+MultiPointCrossover(const GAGenome& p1, const GAGenome& p2, GAGenome* c1, GAGenome* c2) {
+
+  GA1DBinaryStringGenome &mom=(GA1DBinaryStringGenome &)p1;
+  GA1DBinaryStringGenome &dad=(GA1DBinaryStringGenome &)p2;
+  GA1DBinaryStringGenome *sis = NULL, *bro = NULL;
+
+  int n=0, pos = 0, len = 0;
+
+  /**
+   * hledaji se parametry pouze pro jeden typ vozidla
+   * Body krizeni budou v techto mistech:
+   * delka bunky, vozidla | max., min. rychlost | pravdepodobnost zrychleni, zpomaleni
+   */
+  if (CAR_TYPES == 1) {
+
+    if(c1) {
+      sis=(GA1DBinaryStringGenome *)c1;
+      n++;
+    }
+
+    if(c2) {
+      bro=(GA1DBinaryStringGenome *)c2;
+      n++;
+    }
+
+    // kopie delky bunky a delky vozidla
+    len = BITS_TRACK+BITS_CAR_LENGTH;
+    if (c1) sis->copy(mom, pos, pos, len);
+    if (c2) bro->copy(dad, pos, pos, len);
+    pos += len;
+
+    // kopie maximalni a minimalni rychlosti
+    len = BITS_MAX_SPEED + BITS_MIN_SPEED;
+    if (c1) sis->copy(dad, pos, pos, len);
+    if (c2) bro->copy(mom, pos, pos, len);
+    pos += len;
+
+    // kopie pravdepodobnosti zrychleni a zpomaleni
+    len = BITS_SLOWDOWN_P + BITS_ACC_P;
+    if (c1) sis->copy(mom, pos, pos, len);
+    if (c2) bro->copy(dad, pos, pos, len);
+
+  }
+
+  /**
+   * Hledaji se parametry pro vice typu vozidla
+   * Body krizeni budou v techto mistech:
+   * delka jedne bunky | nastaveni vozidla 1 | nastaveni vozidla 2 | ...
+   */
+  else {
+
+    if(c1) {
+      sis=(GA1DBinaryStringGenome *)c1;
+      n++;
+    }
+
+    if(c2) {
+      bro=(GA1DBinaryStringGenome *)c2;
+      n++;
+    }
+
+    // kopie delky bunky
+    len = BITS_TRACK;
+    if (c1) sis->copy(mom, pos, pos, len);
+    if (c2) bro->copy(dad, pos, pos, len);
+    pos += len;
+
+    for (int i = 0; i < CAR_TYPES; ++i) {
+      len = BITS_CAR;
+      if (c1) sis->copy((i%2 == 0 ? dad : mom), pos, pos, len);
+      if (c2) bro->copy((i%2 == 0 ? mom : dad), pos, pos, len);
+      pos += len;
+    }
+  }
+
+  return n;
 }

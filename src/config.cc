@@ -25,6 +25,7 @@ Config::Config() {
   ncf_mean = 20;
   ncf_deviation = 10;
   scf_interval = 1;
+  max_time = 0;
 }
 
 void Config::loadFromFile(const char *filename) {
@@ -132,7 +133,12 @@ void Config::print() {
     cout << "site_length = " << site_length << endl
          << "track_length = " << track_length << endl
          << "# number of track sites = " << getNumberOfTrackCells() << endl
-         << "default_car = " << default_car << endl;
+         << "default_car = " << default_car << endl
+         << "periodic_boundary = " << periodic_boundary << endl
+         << "car_factory = " << car_factory << endl
+         << "max_time = " << max_time << endl
+         << "stats_frequency = " << stats_frequency << endl
+         << "table_format = " << table_format << endl;
 
     for (map<int,CarConfig>::iterator it = car_configs.begin(); it != car_configs.end(); ++it) {
         CarConfig cc = it->second;

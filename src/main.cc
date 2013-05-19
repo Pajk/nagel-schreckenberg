@@ -71,6 +71,7 @@ int main(int argc, char **argv) {
   #endif
 
   statistics.calculatePrintAndReset(world.getCurrentTime());
+  statistics.summaryCalculateAndPrint();
   freeMemory();
 
   return 0;
