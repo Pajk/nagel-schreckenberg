@@ -1,11 +1,10 @@
 #ifndef _CAR_H
 #define _CAR_H
 
-#include "track.h"
 #include "config.h"
-#include "statistics.h"
 
 class Cell;
+class Track;
 
 class Car {
 
@@ -33,11 +32,9 @@ class Car {
 
   Config *config;
 
-  Statistics *statistics;
-
   public:
 
-    Car(long id, int car_class, Config *config, Statistics *statistics);
+    Car(long id, int car_class, Config *config);
     ~Car();
 
     int getCurrentSpeed() { return current_speed; }
@@ -51,6 +48,7 @@ class Car {
     unsigned long long getTimeIn() { return time_in; }
     long getExpectedTimeOut() { return time_in + expected_time; }
     int getLength() { return length; }
+    Track * getTrack() { return track; }
 
     void setCarInFront(Car *car) { car_in_front = car; }
     void setCarBehind(Car *car) { car_behind = car; }
@@ -77,17 +75,7 @@ class Car {
     /**
      * Vrati pocet volnych bunek pred autem
      */
-    int getFreeCellsCount() {
-      if (car_in_front)
-        // pred autem jede jine auto, vrati se vzdalenost od posledni
-        // bunky, kterou auto zabira
-        return car_in_front->getBackPosition() - position;
-      else
-        // auto je prvni na silnici, pred nim uz zadne dalsi nejede
-        // vrati se vzdalenost od konce vozovky + neco navic, aby bylo
-        // auto schopne vyjet z vozovky
-        return track->getLength() - position + 10;
-    }
+    int getFreeCellsCount();
 };
 
 #endif

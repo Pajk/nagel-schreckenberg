@@ -48,7 +48,7 @@ Car *CsvCarFactory::nextCar() {
 
     int car_class = atoi(line.at(5).c_str());
 
-    Car *car = new Car(current_id++, car_class, config, statistics);
+    Car *car = new Car(current_id++, car_class, config);
 
     time_t time_in = parseTime(line.at(2).c_str());
 
@@ -70,11 +70,10 @@ Car *CsvCarFactory::nextCar() {
   }
 }
 
-CsvCarFactory::CsvCarFactory(const char *file_name, Config *config, Statistics *statistics) {
+CsvCarFactory::CsvCarFactory(const char *file_name, Config *config) {
 
   this->column_separator = column_separator;
   this->config = config;
-  this->statistics = statistics;
   this->column_separator = ',';
   this->file_name = file_name;
 

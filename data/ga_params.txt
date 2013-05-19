@@ -11,10 +11,10 @@
 population_size		20
 mutation_probability	0.04
 crossover_probability	0.8
-number_of_generations	200
+number_of_generations	10
 # pocet populaci - pro GADeme
 #number_of_populations   10
 score_filename		bog.dat
 score_frequency		1
-flush_frequency		50
+flush_frequency		20
 replacement_percentage	0.9

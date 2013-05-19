@@ -4,59 +4,107 @@
 class Car;
 class CarFactory;
 class Cell;
+class Config;
+class World;
 struct tm;
 
 class Track {
 
-  int length,
-      number_of_cars;
+  int length;
 
-  unsigned long long sim_time;
+  World * world;
 
   Car * last_car,
-      * next_car,    // auto, ktere ma vjet na cestu jako dalsi v poradi
-      * car;
-
-  Car * delete_list; // auta, ktera vyjela z vozovky
+      * next_car;
 
   Cell * first_cell,
-       * last_cell;
-
-  long time_offset;
-
-  struct tm *start_time;
+       * last_cell,
+       * middle_cell;
 
   CarFactory *car_factory;
 
+  long time_offset;
+
+  bool periodic_boundary;
+
+  // realny cas prijezdu prvniho vozidla na vozovku ziskany z empirickych dat,
+  // pokud se jedna o simulaci na zaklade dat, ktere tento udaj obsahuji,
+  // pomoci tohoto casu je mozne prevadet cas simulace na realny cas
+  // struct tm *start_time;
+
   public:
 
-    Track(CarFactory *car_factory, int length);
+    Track(Config * config, CarFactory * car_factory, World * world = NULL);
     ~Track();
 
-    int getCurrentTime() { return sim_time; }
+    /**
+     * Vrati delku vozovky v poctu bunek
+     */
     int getLength() { return length; }
 
+    /**
+     * Vrati referenci na posledni auto, ktere je na vozovce
+     */
     Car * getLastCar() { return last_car; }
-    void setLastCar(Car *car) { last_car = car; }
 
+    /**
+     * Nastaveni reference na posledni auto, ktere je na vozovce
+     */
+    void setLastCar(Car * car) { last_car = car; }
+
+    /**
+     * Vrati referenci na prvni bunky vozovky
+     */
     Cell * getFirstCell() { return first_cell; }
+
+    /**
+     * Vrati referenci na posledni bunku vozovky
+     */
     Cell * getLastCell() { return last_cell; }
 
     /**
-     * Vykona jeden krok simulace, posune auta na nove pozice.
+     * Vrati referenci na bunku uprostred vozovky
+     */
+    Cell * getMiddleCell() { return middle_cell; }
+
+    /**
+     * Vrati referenci na objekt ridici simulaci
+     */
+    World * getWorld() { return world; }
+
+    /**
+     * Nastavi referenci na ridici objekt
+     */
+    void setWorld(World * world) { this->world = world; }
+
+    /**
+     * Vraci true pokud jsou pouzity periodicke hranicni podminky
+     */
+    bool hasPeriodicBoundary() { return periodic_boundary; }
+
+    /**
+     * Vykona jeden krok simulace, posune vozidla na nove pozice.
      */
     void step();
 
     /**
-     * Kontrola, jestli jsou na ceste jeste nejaka auta nebo jestli
-     * existuje jeste auto, ktere na cestu teprve vjede.
+     * Predikat, ktery znaci, ze jsou na vozovce jeste nejaka vozidla nebo
+     * nejake vozidlo ceka na vhodny cas.
      */
     bool isLive();
 
-    void addOutOfTrackCar(Car * car);
-
   protected:
+
+    /**
+     * Vyvoreni objektu bunek ze kterych se tato cesta sklada
+     */
     void createCells();
+
+    /**
+     * Slouzi ke zjisteni, zda danemu autu je povolen vjezd na vozovku.
+     * Aktualni cas simulace musi byt vetsi nez naplanovany cas vjezdu vozidla
+     * a na zacatku vozovky musi byt dostatek volnych bunek pro dane auto.
+     */
     bool isEnterAllowed(Car * car);
 };
 

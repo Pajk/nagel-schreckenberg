@@ -65,7 +65,7 @@ void extract(int minutes) {
     // pocet aut, ktera opustila vozovku
     // pocet aut, ktera vjela na vozovku
     // prumerna doba dojezdu
-    if (car->getTimeIn() > segment_start + segment_length) {
+    if (time_t(car->getTimeIn()) > segment_start + segment_length) {
       int jump = (car->getTimeIn() - segment_start) / segment_length;
       segment_start += jump * segment_length;
     }
@@ -103,7 +103,7 @@ void extract(int minutes) {
     // pokud auto opousti vozovku v case, ktery uz neni v aktualnim casovem useku,
     // spocita se prumerny cas dojezdu pro aktualni casovy usek a zacne se
     // zpracovavat dalsi casovy usek, ve kterem toto vozidlo je
-    if (car->getTimeIn() + car->getExpectedTime() > segment_start + segment_length) {
+    if (time_t(car->getTimeIn() + car->getExpectedTime()) > segment_start + segment_length) {
       if (statistics[segment_start].cars_out > 0) {
         statistics[segment_start].mean_time /= statistics[segment_start].cars_out;
       }

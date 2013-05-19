@@ -4,7 +4,10 @@ project(nasch)
 
 set(CMAKE_CXX_FLAGS "-g -Wall")
 
-set(SOURCES src/statistics.cc src/car.cc src/track.cc src/car_factory/simple_car_factory.cc src/car_factory/csv_car_factory.cc src/config.cc src/cell.h)
+set(SOURCES src/statistics.cc src/car.cc src/track.cc src/world.cc
+  src/car_factory/normal_car_factory.cc src/car_factory/simple_car_factory.cc
+  src/car_factory/csv_car_factory.cc src/config.cc src/cell.h
+)
 set(TESTS tests/config_test.cc tests/track_test.cc)
 
 add_executable(bin/nasch src/main.cc ${SOURCES})

@@ -3,13 +3,14 @@
 
 #include "car.h"
 #include "cell.h"
+#include "world.h"
+#include "track.h"
 
-Car::Car(long id, int car_class, Config *config, Statistics *statistics) {
+Car::Car(long id, int car_class, Config *config) {
 
   this->id = id;
   this->car_class = car_class;
   this->config = config;
-  this->statistics = statistics;
 
   this->car_in_front = NULL;
   this->car_behind = NULL;
@@ -39,20 +40,11 @@ void Car::loadCarConfig() {
 
 Car::~Car() {
 
-  int total_time = 0;
-  if (track) {
-    total_time = track->getCurrentTime() - time_in;
-  }
-
   // std::cout << "auto " << id << " konci po " << total_time
   //           << " (" << expected_time << ")"
   //           << " s rychlosti " << current_speed
   //           << " a chybou " << expected_time - total_time
   //           << std::endl;
-
-  if (statistics) {
-    statistics->logCarTime(id, total_time, expected_time);
-  }
 
   if (car_in_front) {
     car_in_front->setCarBehind(NULL);
@@ -103,8 +95,8 @@ void Car::enterTrack(Track *track) {
 
   this->track = track;
   this->car_in_front = track->getLastCar();
-  this->time_in = track->getCurrentTime();
   this->cell = track->getFirstCell();
+  this->time_in = track->getWorld()->getCurrentTime();
 
   // posune auto o pocet bunek dopredu
   advanceCells(length);
@@ -127,10 +119,17 @@ void Car::advanceCells(int cells) {
     tmp = tmp->getCellBack();
   }
 
-  // pokud auto vyjelo z vozovky, zaradime ho do seznamu vozidel ke smazani
-  if (position >= track->getLength()) {
-    track->addOutOfTrackCar(this);
-    return;
+  if (track->hasPeriodicBoundary()) {
+    if (position >= track->getLength()) {
+      position %= track->getLength();
+      track->getWorld()->logStats(this);
+    }
+  } else {
+    // pokud auto vyjelo z vozovky, zaradime ho do seznamu vozidel ke smazani
+    if (position >= track->getLength()) {
+      track->getWorld()->addOutOfTrackCar(this);
+      return;
+    }
   }
 
   // nalezeni bunky, na kterou se ma auto presunout
@@ -145,3 +144,27 @@ void Car::advanceCells(int cells) {
   }
 }
 
+int Car::getFreeCellsCount() {
+
+  // zjiteni poctu volnych bunek pred vozidlem
+  // zkontroluje se tolik bunek pred vozidlem, jaka je
+  // jeho maximalni rychlost
+  Cell * tmp = cell->getCellFront();
+  int free_cells = 0;
+
+  for (int i = 0;
+       tmp && tmp->isEmpty() && i < max_speed;
+       tmp = tmp->getCellFront(), ++i) {
+    free_cells++;
+  }
+
+  // pokud nejsou pouzity periodic boundary conditions
+  // je treba zkontrolovat, jestli neni vozidlo na konci trasy
+  // pokud ano, vrati se pocet o jednu bunku vetsi, aby bylo
+  // vozidlo schopno vyjet z vozovky
+  if (!tmp) {
+    free_cells++;
+  }
+
+  return free_cells;
+}

@@ -10,10 +10,21 @@
 
 using namespace std;
 
+#define CAR_CONFIG(opt) if (line.find(#opt, 2) != string::npos) { csin >> car_config.opt; }
+#define CONFIG(opt) if (line.find(#opt) != string::npos) { sin >> opt; } else
+
+// nastaveni vychozich hodnot
 Config::Config() {
   track_length = 5350;
   default_car = 0;
-  site_length = 2.5;
+  site_length = 1;
+  table_format = true;
+  stats_frequency = 15*60;
+  car_factory = 2;
+  periodic_boundary = false;
+  ncf_mean = 20;
+  ncf_deviation = 10;
+  scf_interval = 1;
 }
 
 void Config::loadFromFile(const char *filename) {
@@ -41,22 +52,23 @@ void Config::loadFromFile(const char *filename) {
       continue;
     }
 
-    if (line.find("site_length") != string::npos) {
-      sin >> site_length;
+    CONFIG(site_length)
+    CONFIG(track_length)
+    CONFIG(default_car)
+    CONFIG(car_factory)
+    CONFIG(scf_interval)
+    CONFIG(ncf_mean)
+    CONFIG(ncf_deviation)
+    CONFIG(periodic_boundary)
+    CONFIG(table_format)
+    CONFIG(stats_frequency)
+    CONFIG(max_time)
 
-    } else if (line.find("track_length") != string::npos) {
-      sin >> track_length;
-
-    } else if (line.find("default_car") != string::npos) {
-      sin >> default_car;
-
-    } else if (line.find("car ") == 0) {
+    if (line.find("car ") == 0) {
 
       istringstream csin(line.substr(4));
-
       CarConfig car_config;
       car_config.config = this;
-
       csin >> car_config.car_class;
 
       while(getline(fin, line)) {
@@ -65,38 +77,36 @@ void Config::loadFromFile(const char *filename) {
 
         // preskoceni komentare
         first_char = line.find_first_not_of(" \t");
-        if (first_char != string::npos && line.at(first_char) == '#') {
-          continue;
-        }
+        if (first_char != string::npos && line.at(first_char) == '#') { continue; }
 
+        // nacteni hodnot
         if (line.find("endcar") == 0) {
-          car_configs[car_config.car_class] = car_config;
-          break;
 
-        } else if (line.find("slowdown_probability", 2) != string::npos) {
-          csin >> car_config.slowdown_probability;
-
-        } else if (line.find("acceleration_probability", 2) != string::npos) {
-          csin >> car_config.acceleration_probability;
-
-        } else if (line.find("max_speed", 2) != string::npos) {
-          csin >> car_config.max_speed;
+          // prepocet na interni jednotky
           car_config.max_speed = roundf(float(car_config.max_speed) / 3.6 / site_length);
+          car_config.min_speed = roundf(float(car_config.min_speed) / 3.6 / site_length);
+          car_config.length = roundf(float(car_config.length) / site_length);
+
           // auto musi mit moznost se pohybovat
           if (car_config.max_speed == 0) car_config.max_speed = 1;
 
-        } else if (line.find("min_speed", 2) != string::npos) {
-          csin >> car_config.min_speed;
-          car_config.min_speed = roundf(float(car_config.min_speed) / 3.6 / site_length);
+          // ulozeni nacteneho nastaveni vozidla
+          car_configs[car_config.car_class] = car_config;
 
-        } else if (line.find("length", 2) != string::npos) {
-          csin >> car_config.length;
-          car_config.length = roundf(float(car_config.length) / site_length);
-        }
+          break;
+        } else
+        CAR_CONFIG(slowdown_probability) else
+        CAR_CONFIG(acceleration_probability) else
+        CAR_CONFIG(max_speed) else
+        CAR_CONFIG(min_speed) else
+        CAR_CONFIG(length)
       }
     }
   }
 
+  // uprava nactenych hodnot
+  stats_frequency *= 60;
+  max_time *= 3600;
 }
 
 

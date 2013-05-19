@@ -88,6 +88,11 @@ TEST (ConfigTest, LoadFromFile) {
     test.min_speed = 0;
     test.length = M_TO_CELL(20);
     EXPECT_EQ (test, cc);
+
+    EXPECT_EQ (5*60, config.getStatsFrequency());
+    EXPECT_EQ (true, config.useTableFormat());
+    EXPECT_EQ (1, config.getCarFactory());
+    EXPECT_EQ (true, config.usePeriodicBoundary());
 }
 
 TEST (ConfigTest, LoadFromInteger) {
@@ -225,7 +230,7 @@ TEST (ConfigTest, LoadFromGABinaryStringMinValues) {
     test.car_class = default_car;
     test.config = &config;
     EXPECT_EQ (test, cc);
-    cout << "Expected:\n" << test << "Actual:\n" << cc;
+    // cout << "Expected:\n" << test << "Actual:\n" << cc;
 
     EXPECT_EQ (car_types-1, config.getCarConfig(car_types-1).car_class);
 }

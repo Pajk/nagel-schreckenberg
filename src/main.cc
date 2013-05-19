@@ -1,3 +1,8 @@
+/**
+ * Autor: Pavel Pokorny
+ * Datum: 18.5.2013
+ */
+
 #include <cstdlib>
 #include <ctime>
 #include <csignal>
@@ -9,209 +14,64 @@
 #include "car.h"
 #include "car_factory/simple_car_factory.h"
 #include "car_factory/csv_car_factory.h"
+#include "car_factory/normal_car_factory.h"
 #include "config.h"
 #include "statistics.h"
 #include "cell.h"
+#include "world.h"
 
 #ifdef GUI
-  #include <allegro.h>
-
-  BITMAP *buffer;
-  int screen_width;
-  int screen_height;
-  #define LINE_HEIGHT 2
+#include <allegro.h>
+BITMAP *buffer;
+int screen_width;
+int screen_height;
+#define LINE_HEIGHT 2
 #endif
 
-// carfactory
-// 1 - simple
-// 2 - csv car factory
-#ifndef CARFACTORY
-  #define CARFACTORY 1
-#endif
+#define DEAULT_SAMPLES_FILE "data/samples.csv"
 
 void initAllegro(int);
 void deinitAllegro();
-void sigHandler(int s);
+void freeMemory(int s = -1);
 void setupSignalHandler();
+bool should_execute(int letter);
+CarFactory * getCarFactory(Config * config, int argc, char ** argv);
+Config * getConfig(int argc, char ** argv);
+void guiLoop(World * world);
+void asciiLoop(World * world);
+void loop(World * world);
 
-Track *track;
-CarFactory *car_factory;
-Statistics *statistics;
-Config *config;
+CarFactory * car_factory;
+Config * config;
 
 using std::cout;
-
-// kontrola, zda klavesa byla naposled stisknuta alespon pred 1s
-bool should_execute(int letter) {
-
-   static int key_last_press[256] = {0};
-   if(!key_last_press[0])
-     memset(key_last_press, 2, sizeof(int) * 256);
-
-   time_t last_press = time(NULL);
-   if((last_press - key_last_press[letter]) >= 1) {
-      key_last_press[letter] = last_press;
-      return true;
-   }
-   return false;
-}
+using std::endl;
 
 int main(int argc, char **argv) {
-
-  track = NULL;
 
   setupSignalHandler();
 
   srand(time(NULL)*getpid());
 
-  config = new Config();
-
-  if (argc >= 2) {
-    config->loadFromFile(argv[1]);
-    std::cout << "Settings loaded from '" << argv[1] << "'.\n";
-  } else {
-    config->loadFromFile("data/default.config");
-  }
+  config = getConfig(argc, argv);
   config->print();
+  car_factory = getCarFactory(config, argc, argv);
+  Statistics statistics(config->useTableFormat());
+  World world(&statistics, config);
 
-  statistics = new Statistics();
+  Track track(config, car_factory);
+  world.addTrack(&track);
 
-  #if CARFACTORY==1
-    CarFactory *car_factory = new SimpleCarFactory(config, statistics);
-  #elif CARFACTORY==2
-    if (argc >=3) {
-      car_factory = new CsvCarFactory(argv[2], config, statistics);
-      std::cout << "Samples loaded from '" << argv[2] << "'.\n";
-    } else {
-      car_factory = new CsvCarFactory("data/samples.csv", config, statistics);
-    }
-  #endif
-
-  const int track_length = config->getNumberOfTrackCells();
-
-  #ifdef GUI
-  initAllegro(track_length);
-  #endif
-
-  track = new Track(car_factory, track_length);
-
-  #ifdef GUI
-
-    BITMAP * buffer2 = create_bitmap(screen_width, screen_height);
-
-    int colors[] = {
-      makecol(255,0,0),
-      makecol(100,0,0),
-      makecol(100,100,0),
-      makecol(0,200,0),
-      makecol(0,255,0),
-      makecol(0, 0, 255),
-      makecol(255, 0, 0),
-      makecol(255, 0, 0),
-      makecol(255, 0, 0)
-    };
-
-    bool running = true, stop = false;
-    clear_to_color(screen, makecol(255, 255, 255));
-
-    while (!key[KEY_ESC] && track->isLive()) {
-
-      if (running) {
-        track->step();
-
-        unsigned long long current_time = track->getCurrentTime();
-        int offset = (current_time*LINE_HEIGHT)%(screen_height-LINE_HEIGHT);
-
-        if (offset == 0) {
-          if (stop) {
-            stop = false;
-            running = false;
-            continue;
-          }
-          clear_to_color(screen, makecol(255, 255, 255));
-        }
-        clear_to_color(buffer, makecol(255, 255, 255));
-        clear_to_color(buffer2, makecol(255, 255, 255));
-        // std::cout << offset << std::endl;
-
-        /**
-         * Vykresleni cesty
-         */
-        Cell * cell = track->getFirstCell();
-        while (cell != NULL) {
-          if (cell->isOccupied()) {
-
-            line(buffer, cell->getPosition(), 0, cell->getPosition(), LINE_HEIGHT,
-              makecol(0,0,0));
-              // makecol((255/(cell->getCar()->getCurrentSpeed()+1)), (cell->getCar()->getCurrentSpeed()-1)*30, 0));
-              // colors[cell->getCar()->getCurrentSpeed()-1]);
-
-            std::cout << cell->getCar()->getCurrentSpeed();
-          } else {
-            std::cout << '.';
-          }
-          cell = cell->getCellFront();
-        }
-        std::cout << std::endl;
-        stretch_blit(buffer, buffer2, 0, 0, buffer->w, buffer->h, 0, 0, buffer2->w, buffer2->h);
-        blit(buffer2, screen, 0, 0, 0, offset, screen_width, LINE_HEIGHT);
-      } else {
-        rest(40);
-      }
-
-      if (key[KEY_SPACE]) {
-        if (should_execute(KEY_SPACE)) {
-          if (running) {
-            stop = true;
-            cout << "Stop\n";
-          } else {
-            running = true;
-            clear_to_color(screen, makecol(255, 255, 255));
-            cout << "Run\n";
-          }
-        }
-      }
-    }
-    destroy_bitmap(buffer2);
-
-  #elif ASCII
-
-    while (track->isLive()) {
-
-      track->step();
-      Cell * cell = track->getFirstCell();
-
-      while (cell != NULL) {
-
-        if (cell->isOccupied()) {
-          std::cout << cell->getCar()->getCurrentSpeed();
-        } else {
-          std::cout << '.';
-        }
-        cell = cell->getCellFront();
-      }
-      std::cout << std::endl;
-    }
-
+  #if defined(GUI)
+    guiLoop(&world);
+  #elif defined(ASCII)
+    asciiLoop(&world);
   #else
-
-    //for (int i=0; i< 1000; i++) {
-    while (track->isLive()) {
-      track->step();
-    }
-
+    loop(&world);
   #endif
 
-  statistics->print();
-
-  delete car_factory;
-  delete track;
-  delete config;
-  delete statistics;
-
-  #ifdef GUI
-  deinitAllegro();
-  #endif
+  statistics.calculatePrintAndReset(world.getCurrentTime());
+  freeMemory();
 
   return 0;
 }
@@ -253,19 +113,168 @@ void deinitAllegro() {
 }
 #endif
 
-void sigHandler(int s) {
+/**
+ * Vycisteni alokovane pameti
+ */
+void freeMemory(int s) {
   if (car_factory) delete car_factory;
-  if (track) delete track;
   if (config) delete config;
-  if (statistics) delete statistics;
-  exit(0);
+
+  #ifdef GUI
+  deinitAllegro();
+  #endif
+
+  if (s != -1) exit(0);
 }
 
+/**
+ * Nastaveni callbacku pri zachyceni signalu pro zabiti procesu
+ */
 void setupSignalHandler() {
   struct sigaction sigIntHandler;
-  sigIntHandler.sa_handler = sigHandler;
+  sigIntHandler.sa_handler = freeMemory;
   sigemptyset(&sigIntHandler.sa_mask);
   sigIntHandler.sa_flags = 0;
   sigaction(SIGINT, &sigIntHandler, NULL);
 }
 
+CarFactory * getCarFactory(Config * config, int argc, char ** argv) {
+
+  switch(config->getCarFactory()) {
+    case 2:
+      if (argc >=3) {
+        cout << "Loading samples from '" << argv[2] << "'.\n";
+        return new CsvCarFactory(argv[2], config);
+      } else {
+        return new CsvCarFactory(DEAULT_SAMPLES_FILE, config);
+      }
+    case 3:
+      return new NormalCarFactory(config);
+    case 1:
+    default:
+      return new SimpleCarFactory(config);
+  }
+}
+
+Config * getConfig(int argc, char ** argv) {
+  Config * conf = new Config();
+  if (argc >= 2) {
+    conf->loadFromFile(argv[1]);
+    cout << "Settings loaded from '" << argv[1] << "'.\n";
+  } else {
+    conf->loadFromFile("data/default.config");
+  }
+
+  return conf;
+}
+
+/**
+ * kontrola, zda klavesa byla naposled stisknuta alespon pred 1s
+ */
+bool should_execute(int letter) {
+
+   static int key_last_press[256] = {0};
+   if(!key_last_press[0])
+     memset(key_last_press, 2, sizeof(int) * 256);
+
+   time_t last_press = time(NULL);
+   if((last_press - key_last_press[letter]) >= 1) {
+      key_last_press[letter] = last_press;
+      return true;
+   }
+   return false;
+}
+
+#ifdef GUI
+void guiLoop(World * world) {
+
+  initAllegro(config->getNumberOfTrackCells());
+
+  BITMAP * buffer2 = create_bitmap(screen_width, screen_height);
+
+  bool running = true, stop = false;
+  clear_to_color(screen, makecol(255, 255, 255));
+
+  while (!key[KEY_ESC] && world->isLive()) {
+
+    if (running) {
+
+      /**
+       * Krokovani simulace
+       */
+      world->step();
+
+      int offset = (world->getCurrentTime()*LINE_HEIGHT)%(screen_height-LINE_HEIGHT);
+
+      if (offset == 0) {
+        if (stop) {
+          stop = false;
+          running = false;
+          continue;
+        }
+        clear_to_color(screen, makecol(255, 255, 255));
+      }
+      clear_to_color(buffer, makecol(255, 255, 255));
+      clear_to_color(buffer2, makecol(255, 255, 255));
+
+      /**
+       * Vykresleni cesty
+       */
+      Cell * cell = world->getTrack()->getFirstCell();
+      for (int i = 0; i < world->getTrack()->getLength(); ++i) {
+        if (cell->isOccupied()) {
+          line(buffer, cell->getPosition(), 0, cell->getPosition(), LINE_HEIGHT, makecol(0,0,0));
+        }
+        cell = cell->getCellFront();
+      }
+      stretch_blit(buffer, buffer2, 0, 0, buffer->w, buffer->h, 0, 0, buffer2->w, buffer2->h);
+      blit(buffer2, screen, 0, 0, 0, offset, screen_width, LINE_HEIGHT);
+    } else {
+      rest(40);
+    }
+
+    /**
+     * Zastaveni simulace pri stistku mezerniku
+     */
+    if (key[KEY_SPACE]) {
+      if (should_execute(KEY_SPACE)) {
+        if (running) {
+          stop = true;
+          cout << "Stop\n";
+        } else {
+          running = true;
+          clear_to_color(screen, makecol(255, 255, 255));
+          cout << "Run\n";
+        }
+      }
+    }
+  }
+  destroy_bitmap(buffer2);
+}
+#endif
+
+#ifdef ASCII
+void asciiLoop(World * world) {
+  while (world->isLive()) {
+
+      world->step();
+      Cell * cell = world->getTrack()->getFirstCell();
+
+      for (int i = 0; i < world->getTrack()->getLength(); ++i) {
+        if (cell->isOccupied()) {
+          cout << cell->getCar()->getCurrentSpeed();
+        } else {
+          cout << '.';
+        }
+        cell = cell->getCellFront();
+      }
+      cout << endl;
+    }
+}
+#endif
+
+void loop(World * world) {
+    while (world->isLive()) {
+      world->step();
+    }
+}

@@ -6,7 +6,6 @@
 #include <string>
 
 #include "car_factory.h"
-#include "../statistics.h"
 
 class Car;
 
@@ -20,15 +19,13 @@ class CsvCarFactory : public CarFactory {
 
   Config *config;
 
-  Statistics *statistics;
-
   std::vector<std::vector<std::string> > buffer;
 
   std::vector<std::vector<std::string> >::iterator current_car;
 
   public:
 
-    CsvCarFactory(const char *file_name, Config *config = NULL, Statistics *statistics = NULL);
+    CsvCarFactory(const char *file_name, Config *config = NULL);
     virtual ~CsvCarFactory();
 
     std::vector<std::string> nextLine();
@@ -42,7 +39,6 @@ class CsvCarFactory : public CarFactory {
     void sortByExpectedTimeOut();
 
     void setConfig(Config *config) { this->config = config; }
-    void setStatistics(Statistics *statistics) { this->statistics = statistics; }
 };
 
 #endif

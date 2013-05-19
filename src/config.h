@@ -70,6 +70,14 @@ class Config {
   float site_length;
   int track_length;
   int default_car;
+  bool table_format;
+  int stats_frequency;
+  int car_factory;
+  bool periodic_boundary;
+  int scf_interval;
+  int ncf_mean;
+  float ncf_deviation;
+  unsigned long max_time;
 
   std::map <int, CarConfig> car_configs;
 
@@ -98,10 +106,17 @@ class Config {
     int getDefaultCar() { return default_car; }
     int getNumberOfTrackCells() { return site_length > 0 ? track_length/site_length : 1; }
     int getNumberOfCarTypes() { return car_configs.size(); }
+    bool useTableFormat() { return table_format; }
+    int getStatsFrequency() { return stats_frequency; }
+    int getCarFactory() { return car_factory; }
+    bool usePeriodicBoundary() { return periodic_boundary; }
+    int getSCFInterval() { return scf_interval; }
+    int getNCFMean() { return ncf_mean; }
+    int getNCFDeviation() { return ncf_deviation; }
+    unsigned long getMaxTime() { return max_time; }
 
-    void setTrackLength(int track_length) {
-      this->track_length = track_length;
-    }
+    void setTrackLength(int track_length) { this->track_length = track_length; }
+    void setSiteLength(float site_length) { this->site_length = site_length; }
 };
 
 #endif

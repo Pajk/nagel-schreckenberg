@@ -12,6 +12,8 @@
 #include "car_factory/simple_car_factory.h"
 #include "car_factory/csv_car_factory.h"
 #include "config.h"
+#include "statistics.h"
+#include "world.h"
 
 using namespace std;
 
@@ -69,10 +71,10 @@ float Fitness(GAGenome& g) {
     Statistics *statistics = new Statistics();
     car_factory->resetIterator();
     car_factory->setConfig(config);
-    car_factory->setStatistics(statistics);
 
-    int track_length = config->getNumberOfTrackCells();
-    Track *track = new Track(car_factory, track_length);
+    Track *track = new Track(config, car_factory);
+    World world(statistics, config);
+    world.addTrack(track);
 
     while (track->isLive()) {
         track->step();
