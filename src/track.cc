@@ -12,9 +12,10 @@
 Track::Track(Config * config, CarFactory * car_factory, World * world) {
 
   this->length = config->getNumberOfTrackCells();
-  this->periodic_boundary = config->usePeriodicBoundary();
+  this->periodic_boundary = config->getPeriodicBoundary();
   this->world = world;
   this->car_factory = car_factory;
+  this->config = config;
 
   last_car = NULL;
   time_offset = 0;
@@ -107,11 +108,15 @@ void Track::step() {
    */
   Car * car = last_car;
   Car *tmp_car;
+  // float harmean_speed = 0;
   float mean_speed = 0;
   int cars_count = 0;
+  float speed_kmph = 0;
 
   while (car) {
-    mean_speed += car->getCurrentSpeed();
+    speed_kmph = car->getCurrentSpeed() * config->getSiteLength() * 3.6;
+    // harmean_speed += 1.0 / speed_kmph;
+    mean_speed += speed_kmph;
     cars_count++;
 
     tmp_car = car->getCarInFront();
@@ -120,9 +125,11 @@ void Track::step() {
   }
 
   // vypocet a zalogovani prumerne rychlosti vsech vozidel na trati
+  // pocita se harmonicky prumer
   if (cars_count) {
-    mean_speed /= cars_count;
+    mean_speed = mean_speed / cars_count;
   }
+  // if (harmean_speed) { harmean_speed = cars_count / harmean_speed; }
   world->logMeanSpeed(mean_speed);
 
   /**

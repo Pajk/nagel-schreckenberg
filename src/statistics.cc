@@ -5,6 +5,7 @@
 
 #include "statistics.h"
 #include "car.h"
+#include "config.h"
 
 using std::endl;
 using std::cout;
@@ -12,10 +13,13 @@ using std::setw;
 using std::setprecision;
 using std::vector;
 
-Statistics::Statistics(bool table_format, bool suppress_output) {
+Statistics::Statistics(Config * config, bool suppress_output) {
+    this->config = config;
+
+    table_format = config->getTableFormat();
+
     reset();
     summaryReset();
-    this->table_format = table_format;
     this->suppress_output = suppress_output;
     if (table_format && !suppress_output) printHeader();
 }
@@ -32,6 +36,7 @@ void Statistics::reset(long time_from) {
 void Statistics::logCarTime(long current_time, Car * car) {
 
     int total_time = current_time - car->getTimeIn();
+    // cout << "car " << car->getId() << " ends after " << total_time << " " << current_time << " " << car->getTimeIn() << endl;
     CarTime ct;
     ct.car_id = car->getId();
     ct.total_time = total_time;
@@ -79,16 +84,6 @@ void Statistics::calculate(long time_to) {
     }
     interval_data.cars = car_times.size();
 
-    // vypocet dopravni toku pro dany casovy interval
-    long interval = interval_data.t_to - interval_data.t_from;
-    interval_data.flow = float(interval_data.cars) / interval;
-
-    // vypocet hustoty dopravy
-    interval_data.density = float(cell_time_occupied) / interval;
-
-    // vypocet prumerne rychlosti
-    interval_data.mean_speed = mean_speed / interval;
-
     // vypocet prumerne chyby
     if (interval_data.cars > 0) {
         float cars = interval_data.cars;
@@ -98,6 +93,21 @@ void Statistics::calculate(long time_to) {
         interval_data.mape *= 100.0;
         interval_data.mae /= cars;
         interval_data.rmse = sqrt(interval_data.rmse/cars);
+
+        // vypocet dopravni toku pro dany casovy interval
+        long interval = interval_data.t_to - interval_data.t_from;
+        interval_data.flow = float(interval_data.cars) / (interval / 3600.0);
+
+        // vypocet prumerne rychlosti v jednotkach pocet bunek za sekundu
+        interval_data.mean_speed = (config->getTrackLength() / 1000.0)
+            / (interval_data.mean_travel_time / 3600);
+
+        // vypocet hustoty dopravy
+        if (interval_data.mean_speed > 0) {
+            interval_data.density =  interval_data.flow / interval_data.mean_speed;
+        } else {
+            interval_data.density = 0;
+        }
     }
 
     if (interval_data.slower_cars > 0) {
@@ -114,7 +124,7 @@ void Statistics::calculate(long time_to) {
 
 void Statistics::print() {
 
-    if (interval_data.cars == 0 || suppress_output) {
+    if (suppress_output) {
         return;
     }
 
@@ -125,14 +135,15 @@ void Statistics::print() {
              << setw(7) << interval_data.t_to << ','
              << setw(8) << setprecision(2) << interval_data.mae << ','
              << setw(8) << setprecision(2) << interval_data.mape << ','
-             << setw(7) << setprecision(3) << interval_data.flow << ','
+             << setw(7) << setprecision(0) << interval_data.flow << ','
              << setw(8) << setprecision(3) << interval_data.density << ','
              << setw(5) << interval_data.cars << ','
-             << setw(7) << setprecision(2) << interval_data.mean_speed << endl;
+             << setw(7) << setprecision(2) << interval_data.mean_speed << ','
+             << setw(7) << setprecision(2) << interval_data.mean_travel_time << endl;
 
              // <<  << fixed << setprecision(2) << loop.price / 100.0
     } else {
-        cout << "====================================\n"
+        cout << "\n====================================\n"
             << interval_data.cars << " cars" << endl
             << "mean absolute error: " << interval_data.mae << "s" << endl
             << "mean absolute percentage error: " << interval_data.mape << "%" << endl
@@ -211,8 +222,6 @@ void Statistics::summaryPrint() {
     interval_data = summary_data;
     if (!suppress_output) {
         cout << "================================================================\n";
-    } else {
-        printHeader();
     }
     suppress_output = false;
     print();
@@ -227,5 +236,5 @@ void Statistics::summaryReset() {
 }
 
 void Statistics::printHeader() {
-    cout << " t_from,   t_to,     MAE,    MAPE,   flow, density, cars,  speed\n";
+    cout << " t_from,   t_to,     MAE,    MAPE,   flow, density, cars,  speed,   time\n";
 }

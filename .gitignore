@@ -15,3 +15,5 @@ Makefile
 tags
 *swp
 results.txt
+generations.data
+configs/tmp.config

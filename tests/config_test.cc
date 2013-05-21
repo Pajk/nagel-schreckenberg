@@ -90,9 +90,9 @@ TEST (ConfigTest, LoadFromFile) {
     EXPECT_EQ (test, cc);
 
     EXPECT_EQ (5*60, config.getStatsFrequency());
-    EXPECT_EQ (true, config.useTableFormat());
+    EXPECT_EQ (true, config.getTableFormat());
     EXPECT_EQ (1, config.getCarFactory());
-    EXPECT_EQ (true, config.usePeriodicBoundary());
+    EXPECT_EQ (true, config.getPeriodicBoundary());
 }
 
 TEST (ConfigTest, LoadFromInteger) {

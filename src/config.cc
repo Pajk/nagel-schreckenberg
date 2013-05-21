@@ -10,35 +10,27 @@
 
 using namespace std;
 
-#define CAR_CONFIG(opt) if (line.find(#opt, 2) != string::npos) { csin >> car_config.opt; }
-#define CONFIG(opt) if (line.find(#opt) != string::npos) { sin >> opt; } else
+#define LOAD_CAR_CONFIG(opt) if (line.find(#opt, 2) != string::npos) { csin >> car_config.opt; }
+#define LOAD_CONFIG(opt) if (line.find(#opt) != string::npos) { sin >> opt; loaded++; } else
 
-// nastaveni vychozich hodnot
-Config::Config() {
-  track_length = 5350;
-  default_car = 0;
-  site_length = 1;
-  table_format = true;
-  stats_frequency = 15*60;
-  car_factory = 2;
-  periodic_boundary = false;
-  ncf_mean = 20;
-  ncf_deviation = 10;
-  scf_interval = 1;
-  max_time = 0;
+Config::~Config() {
+  if (samples_file != NULL) {
+    delete[] samples_file;
+  }
 }
 
-void Config::loadFromFile(const char *filename) {
+int Config::loadFromFile(const char *filename) {
 
   ifstream fin(filename);
 
   if (!fin.good()) {
-    cout << "Cannot open config file '" << filename << "'." << endl;
-    exit(-1);
+    cerr << "Cannot open config file '" << filename << "'." << endl;
+    return 0;
   }
 
   string line;
   size_t first_char;
+  int loaded = 0;
 
   while(getline(fin, line)) {
     istringstream sin(line.substr(line.find("=") + 1));
@@ -53,17 +45,26 @@ void Config::loadFromFile(const char *filename) {
       continue;
     }
 
-    CONFIG(site_length)
-    CONFIG(track_length)
-    CONFIG(default_car)
-    CONFIG(car_factory)
-    CONFIG(scf_interval)
-    CONFIG(ncf_mean)
-    CONFIG(ncf_deviation)
-    CONFIG(periodic_boundary)
-    CONFIG(table_format)
-    CONFIG(stats_frequency)
-    CONFIG(max_time)
+    LOAD_CONFIG(site_length)
+    LOAD_CONFIG(track_length)
+    LOAD_CONFIG(default_car)
+    LOAD_CONFIG(car_factory)
+    LOAD_CONFIG(scf_interval)
+    LOAD_CONFIG(ncf_mean)
+    LOAD_CONFIG(ncf_deviation)
+    LOAD_CONFIG(periodic_boundary)
+    LOAD_CONFIG(table_format)
+    LOAD_CONFIG(stats_frequency)
+    LOAD_CONFIG(max_time)
+    LOAD_CONFIG(slow_to_stop)
+    LOAD_CONFIG(slow_to_start_probability)
+    if (line.find("samples_file") != string::npos) {
+
+      if (samples_file == NULL) samples_file = new char[255];
+
+      sin >> samples_file;
+
+    } else
 
     if (line.find("car ") == 0) {
 
@@ -96,11 +97,11 @@ void Config::loadFromFile(const char *filename) {
 
           break;
         } else
-        CAR_CONFIG(slowdown_probability) else
-        CAR_CONFIG(acceleration_probability) else
-        CAR_CONFIG(max_speed) else
-        CAR_CONFIG(min_speed) else
-        CAR_CONFIG(length)
+        LOAD_CAR_CONFIG(slowdown_probability) else
+        LOAD_CAR_CONFIG(acceleration_probability) else
+        LOAD_CAR_CONFIG(max_speed) else
+        LOAD_CAR_CONFIG(min_speed) else
+        LOAD_CAR_CONFIG(length)
       }
     }
   }
@@ -108,6 +109,8 @@ void Config::loadFromFile(const char *filename) {
   // uprava nactenych hodnot
   stats_frequency *= 60;
   max_time *= 3600;
+
+  return loaded;
 }
 
 
@@ -130,15 +133,23 @@ CarConfig Config::getDefaultCarConfig() {
 
 void Config::print() {
 
-    cout << "site_length = " << site_length << endl
-         << "track_length = " << track_length << endl
-         << "# number of track sites = " << getNumberOfTrackCells() << endl
-         << "default_car = " << default_car << endl
-         << "periodic_boundary = " << periodic_boundary << endl
-         << "car_factory = " << car_factory << endl
-         << "max_time = " << max_time << endl
-         << "stats_frequency = " << stats_frequency << endl
-         << "table_format = " << table_format << endl;
+  cout << "car_factory = " << car_factory << endl
+       << "scf_interval = " << scf_interval << endl
+       << "ncf_mean = " << ncf_mean << endl
+       << "ncf_deviation = " << ncf_deviation << endl;
+  if (samples_file != NULL) {
+       cout << "samples_file = " << samples_file << endl;
+  }
+  cout << "max_time = " << max_time/3600 << endl
+       << "periodic_boundary = " << periodic_boundary << endl
+       << "site_length = " << site_length << endl
+       << "track_length = " << track_length << endl
+       << "# number of track sites = " << getNumberOfTrackCells() << endl
+       << "default_car = " << default_car << endl
+       << "table_format = " << table_format << endl
+       << "stats_frequency = " << stats_frequency/60 << endl
+       << "slow_to_stop = " << slow_to_stop << endl
+       << "slow_to_start_probability = " << slow_to_start_probability << endl;
 
     for (map<int,CarConfig>::iterator it = car_configs.begin(); it != car_configs.end(); ++it) {
         CarConfig cc = it->second;

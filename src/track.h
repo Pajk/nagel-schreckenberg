@@ -23,6 +23,8 @@ class Track {
 
   CarFactory *car_factory;
 
+  Config * config;
+
   long time_offset;
 
   bool periodic_boundary;

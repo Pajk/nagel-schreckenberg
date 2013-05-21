@@ -5,6 +5,7 @@
 #include <cstdlib>
 
 class Car;
+class Config;
 
 struct CarTime {
   int total_time;
@@ -63,9 +64,11 @@ class Statistics {
    */
   bool suppress_output;
 
+  Config * config;
+
   public:
 
-    Statistics(bool table_format = false, bool suppress_output = false);
+    Statistics(Config * config, bool suppress_output = false);
 
     /**
      * Vynulovani vsech statistik a smazani nasbiranych dat
@@ -108,7 +111,7 @@ class Statistics {
       summaryPrint();
     }
 
-    void printHeader();
+    static void printHeader();
 };
 
 #endif

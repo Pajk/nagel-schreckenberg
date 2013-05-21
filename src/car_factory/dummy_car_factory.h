@@ -9,6 +9,10 @@ class DummyCarFactory : public CarFactory {
   public:
     Car * nextCar() { return NULL; }
 
+    void setConfig(Config * config) {
+        this->config = config;
+    }
+
 };
 
 #endif

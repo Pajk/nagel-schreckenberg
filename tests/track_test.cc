@@ -2,7 +2,6 @@
 #include "../src/car_factory/dummy_car_factory.h"
 #include "../src/track.h"
 #include "../src/cell.h"
-#include "../src/statistics.h"
 #include "../src/config.h"
 
 TEST (TrackTest, createCells) {
@@ -12,7 +11,6 @@ TEST (TrackTest, createCells) {
     config.setTrackLength(876);
     config.setSiteLength(1);
     Track track(&config, car_factory);
-    Statistics statistics;
 
     EXPECT_EQ (876, track.getLength());
 

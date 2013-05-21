@@ -37,6 +37,13 @@
 #define ACC_L 0.3
 #define ACC_R 1.0
 
+// makro pro vygenerovani definice, getteru a setteru parametru
+#define CONFIG_ITEM(type, name, canonical) \
+  protected: type canonical; \
+  public: \
+    type get##name() { return canonical; } \
+    void set##name(type value) { this->canonical = value; }
+
 class GABinaryString;
 class Config;
 
@@ -67,27 +74,47 @@ std::ostream& operator<<(std::ostream& out, CarConfig& r);
 
 class Config {
 
-  float site_length;
-  int track_length;
-  int default_car;
-  bool table_format;
-  int stats_frequency;
-  int car_factory;
-  bool periodic_boundary;
-  int scf_interval;
-  int ncf_mean;
-  float ncf_deviation;
-  unsigned long max_time;
+  CONFIG_ITEM(float, SiteLength, site_length)
+  CONFIG_ITEM(int, TrackLength, track_length)
+  CONFIG_ITEM(int, DefaultCar, default_car)
+  CONFIG_ITEM(bool, TableFormat, table_format)
+  CONFIG_ITEM(int, StatsFrequency, stats_frequency)
+  CONFIG_ITEM(int, CarFactory, car_factory)
+  CONFIG_ITEM(bool, PeriodicBoundary, periodic_boundary)
+  CONFIG_ITEM(int, SCFInterval, scf_interval)
+  CONFIG_ITEM(float, NCFDeviation, ncf_deviation)
+  CONFIG_ITEM(int, NCFMean, ncf_mean)
+  CONFIG_ITEM(char *, SamplesFile, samples_file)
+  CONFIG_ITEM(unsigned long, MaxTime, max_time)
+  CONFIG_ITEM(bool, SlowToStop, slow_to_stop)
+  CONFIG_ITEM(float, SlowToStartProbability, slow_to_start_probability)
 
   std::map <int, CarConfig> car_configs;
 
   public:
-    Config();
+    Config() {
+      // nastaveni vychozich hodnot
+      track_length = 5350;
+      default_car = 0;
+      site_length = 1;
+      table_format = true;
+      stats_frequency = 0;
+      car_factory = 2;
+      periodic_boundary = false;
+      ncf_mean = 20;
+      ncf_deviation = 10;
+      scf_interval = 1;
+      max_time = 0;
+      slow_to_stop = false;
+      slow_to_start_probability = 0.5;
+      samples_file = NULL;
+    }
+    ~Config();
 
     /**
-     * Pouziti techto medot lze videt v tests/config_test.cc
+     * Pouziti techto metod lze videt v tests/config_test.cc
      */
-    void loadFromFile(const char *filename);
+    int loadFromFile(const char *filename);
     void loadFromInteger(int binary_integer);
 
     /**
@@ -101,23 +128,8 @@ class Config {
 
     void print();
 
-    float getSiteLength() { return site_length; }
-    int getTrackLength() { return track_length; }
-    int getDefaultCar() { return default_car; }
     int getNumberOfTrackCells() { return site_length > 0 ? track_length/site_length : 1; }
     int getNumberOfCarTypes() { return car_configs.size(); }
-    bool useTableFormat() { return table_format; }
-    int getStatsFrequency() { return stats_frequency; }
-    int getCarFactory() { return car_factory; }
-    bool usePeriodicBoundary() { return periodic_boundary; }
-    int getSCFInterval() { return scf_interval; }
-    int getNCFMean() { return ncf_mean; }
-    int getNCFDeviation() { return ncf_deviation; }
-    unsigned long getMaxTime() { return max_time; }
-
-    void setTrackLength(int track_length) { this->track_length = track_length; }
-    void setSiteLength(float site_length) { this->site_length = site_length; }
-    void setTableFormat(bool table_format) { this->table_format = table_format; }
 };
 
 #endif

@@ -88,6 +88,9 @@ void World::addOutOfTrackCar(Car * car) {
   if (car->getCarBehind()) {
     car->getCarBehind()->setCarInFront(NULL);
   }
+
+  car->setCell(NULL);
+
 }
 
 void World::logStats(Car * car) {

@@ -18,6 +18,9 @@ class Car {
       old_position,
       length;
 
+  // poznaceni, ze auto v minulek kroku stalo z duvodu uplatneni slow-to-start
+  bool slow_start;
+
   unsigned long long time_in;
 
   float slowdown_probability,
@@ -54,6 +57,7 @@ class Car {
     void setCarBehind(Car *car) { car_behind = car; }
     void setTimeIn(long time) { time_in = time; }
     void setExpectedTime(int time) { expected_time = time; }
+    void setCell(Cell * cell) { this->cell = cell; }
 
     /**
      * Vozidlo vjede na zadanou vozovku
@@ -72,10 +76,17 @@ class Car {
 
     void loadCarConfig();
 
+    void basicStep();
+
+    void slowToStopStep();
+
     /**
      * Vrati pocet volnych bunek pred autem
+     * @param visibility Kolik predchazejicich bunek se ma maximalne zkontrolovat
      */
-    int getFreeCellsCount();
+    int getFreeCellsCount(int visiblity);
+
+    int getCarAheadSpeed(int free_cells);
 };
 
 #endif

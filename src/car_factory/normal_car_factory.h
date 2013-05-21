@@ -12,22 +12,26 @@ class NormalCarFactory : public CarFactory {
   int car_types;
   int mean;
   float deviation;
-  Config *config;
 
   double V1, V2, S;
   int phase;
 
   public:
-    NormalCarFactory(Config *config) : config(config) {
-        current_id = 1;
-        last_car_time = 0;
-        int car_types = config->getNumberOfCarTypes();
-        if (car_types > 1) car_types--;
+    NormalCarFactory(Config *config) {
+      setConfig(config);
+    };
 
+    void setConfig(Config * config) {
+      this->config = config;
+      if (config != NULL) {
+        current_id = 1;
         phase = 0;
+        last_car_time = 0;
+        car_types = config->getNumberOfCarTypes();
         mean = config->getNCFMean();
         deviation = config->getNCFDeviation();
-    };
+      }
+    }
 
     Car *nextCar();
 

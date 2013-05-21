@@ -13,15 +13,20 @@ class SimpleCarFactory : public CarFactory {
   Config *config;
 
   public:
-    SimpleCarFactory(Config *config) : config(config) {
-        current_id = 1;
-        last_car_time = 0;
-        int car_types = config->getNumberOfCarTypes();
-        if (car_types > 1) car_types--;
+    SimpleCarFactory(Config *config) {
+      setConfig(config);
     };
 
-    Car *nextCar();
+    void setConfig(Config * config) {
+      this->config = config;
+      if (config != NULL) {
+        current_id = 1;
+        last_car_time = 0;
+        car_types = config->getNumberOfCarTypes();
+      }
+    }
 
+    Car *nextCar();
 };
 
 #endif

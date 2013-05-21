@@ -13,7 +13,7 @@
 #include "track.h"
 #include "car.h"
 #include "car_factory/simple_car_factory.h"
-#include "car_factory/csv_car_factory.h"
+#include "car_factory/prague_car_factory.h"
 #include "car_factory/normal_car_factory.h"
 #include "config.h"
 #include "statistics.h"
@@ -28,7 +28,8 @@ int screen_height;
 #define LINE_HEIGHT 2
 #endif
 
-#define DEAULT_SAMPLES_FILE "data/samples.csv"
+#define DEFAULT_SAMPLES_FILE "data/samples.csv"
+#define DEFAULT_CONFIG_FILE "configs/default.config"
 
 void initAllegro(int);
 void deinitAllegro();
@@ -45,6 +46,7 @@ CarFactory * car_factory;
 Config * config;
 
 using std::cout;
+using std::cerr;
 using std::endl;
 
 int main(int argc, char **argv) {
@@ -56,7 +58,7 @@ int main(int argc, char **argv) {
   config = getConfig(argc, argv);
   config->print();
   car_factory = getCarFactory(config, argc, argv);
-  Statistics statistics(config->useTableFormat());
+  Statistics statistics(config);
   World world(&statistics, config);
 
   Track track(config, car_factory);
@@ -125,7 +127,7 @@ void freeMemory(int s) {
   deinitAllegro();
   #endif
 
-  if (s != -1) exit(0);
+  exit(0);
 }
 
 /**
@@ -142,28 +144,41 @@ void setupSignalHandler() {
 CarFactory * getCarFactory(Config * config, int argc, char ** argv) {
 
   switch(config->getCarFactory()) {
+    case 1:
+      return new SimpleCarFactory(config);
     case 2:
+      return new NormalCarFactory(config);
+    case 3:
+    default:
       if (argc >=3) {
         cout << "Loading samples from '" << argv[2] << "'.\n";
-        return new CsvCarFactory(argv[2], config);
+        return new PragueCarFactory(argv[2], config);
+      } else if(config->getSamplesFile() != NULL) {
+        cout << "Loading samples from '" << config->getSamplesFile() << "'.\n";
+        return new PragueCarFactory(config->getSamplesFile(), config);
       } else {
-        return new CsvCarFactory(DEAULT_SAMPLES_FILE, config);
+        cout << "Loading samples from '" << DEFAULT_SAMPLES_FILE << "'.\n";
+        return new PragueCarFactory(DEFAULT_SAMPLES_FILE, config);
       }
-    case 3:
-      return new NormalCarFactory(config);
-    case 1:
-    default:
-      return new SimpleCarFactory(config);
   }
 }
 
 Config * getConfig(int argc, char ** argv) {
   Config * conf = new Config();
   if (argc >= 2) {
-    conf->loadFromFile(argv[1]);
-    cout << "Settings loaded from '" << argv[1] << "'.\n";
+    if (conf->loadFromFile(argv[1]) > 0) {
+      cout << "Settings loaded from '" << argv[1] << "'.\n";
+    } else {
+      cerr << "Config file '" << argv[1] << "' is not valid.\n";
+      exit(-1);
+    }
   } else {
-    conf->loadFromFile("data/default.config");
+    if (conf->loadFromFile(DEFAULT_CONFIG_FILE) > 0) {
+      cout << "Settings loaded from '" << DEFAULT_CONFIG_FILE << "'.\n";
+    } else {
+      cerr << "Config file '" << DEFAULT_CONFIG_FILE << "' is not valid.\n";
+      exit(-1);
+    }
   }
 
   return conf;

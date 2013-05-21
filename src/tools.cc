@@ -7,23 +7,33 @@
 #include <vector>
 #include <map>
 #include <cstring>
+#include <iomanip>
 
-#include "car_factory/csv_car_factory.h"
+#include "car_factory/prague_car_factory.h"
 #include "car.h"
 #include "config.h"
 
+#define USAGE "Tools usage\n\n\
+= Analyze:\n\
+  tools analyze <data_file>\n\
+  Example: ./bin/tools analyze data/prague/evropska_20.csv\n\
+\n\n\
+= Extract:\n\
+  tools extract <data_file> [interval_minutes=5]\n\
+  Example: ./bin/tools extract data/prague/evropska_20.csv 30 \n\n"
+
 using namespace std;
 
-CsvCarFactory * car_factory;
+PragueCarFactory * car_factory;
 Config * config;
 
 void loadCarFactory(char * data_file) {
 
   config = new Config();
-  config->loadFromFile("data/default.config");
+  config->loadFromFile("configs/default.config");
   config->setTrackLength(5349);
 
-  car_factory = new CsvCarFactory(data_file, config);
+  car_factory = new PragueCarFactory(data_file, config);
   // cerr << "Data loaded from '" << data_file << "'.\n";
 }
 
@@ -91,15 +101,16 @@ void extract(int minutes) {
   car = car_factory->nextCar();
   segment_start = mktime(timeinfo);
   while (car) {
+
     // time_t in = car->getTimeIn();
     // time_t out = car->getExpectedTimeOut();
-    // // cout << car->getId() << " " << ctime(&in) << " " << ctime(&out) << endl;
     // cout << car->getId() << " "
     //      << car->getTimeIn() << " "
     //      << car->getExpectedTimeOut() << " "
     //      << car->getExpectedTime() << endl;
     // cout << ctime(&in);
     // cout << ctime(&out);
+
     // pokud auto opousti vozovku v case, ktery uz neni v aktualnim casovem useku,
     // spocita se prumerny cas dojezdu pro aktualni casovy usek a zacne se
     // zpracovavat dalsi casovy usek, ve kterem toto vozidlo je
@@ -122,18 +133,22 @@ void extract(int minutes) {
     car = car_factory->nextCar();
   }
 
+  if (statistics[segment_start].cars_out > 0) {
+    statistics[segment_start].mean_time /= statistics[segment_start].cars_out;
+  }
+
   char buffer [80];
 
   // vytisknuti hlavicky
-  cout << "\"Time\";\"TravelTime\";\"CarsIn\";\"CarsOut\";\"CarsIn1\";\"CarsIn2\";\"CarsIn3\";\"CarsIn4\";\"CarsIn5\";\"CarsInUnknown\";\n";
+  cout << "Date;TravelTime;CarsIn;CarsOut;CarsIn1;CarsIn2;CarsIn3;CarsIn4;CarsIn5;CarsInUnknown\n";
 
   for (map<time_t, segment_info>::iterator it = statistics.begin(); it != statistics.end(); ++it) {
 
     // tisk casu do stringu
     timeinfo = localtime(&(it->first));
-    strftime(buffer, 80, "%d-%m-%Y %H:%M:%S", timeinfo);
+    strftime(buffer, 80, "%Y-%m-%d %H:%M", timeinfo);
 
-    cout << '"' << buffer << "\";"
+    cout << buffer << ";"
       << it->second.mean_time << ";"
       << it->second.cars_in << ";"
       << it->second.cars_out << ";"
@@ -161,12 +176,16 @@ void analyze() {
   cout << "\n| id\t| #\t| T[s]\t| speed[m/s]\t| speed[km/h]\t|" << endl;
   for (int i = 0; i < 57; ++i) cout << '-'; cout << endl;
 
+  int sum_cars = 0, sum_time = 0;
+  float sum_speed = 0;
+
   int sum, timelen;
   for (map<int,vector<int> >::iterator it = statistics.begin(); it != statistics.end(); ++it) {
 
     // tisk id tridy vozidla a poctu vozidel dane tridy v sade
     cout << "| " << it->first << "\t| "
          << it->second.size() << "\t| ";
+    sum_cars += it->second.size();
 
     // vypocet a tisk prumerne doby dojezdu dane tridy
     sum = 0;
@@ -175,11 +194,21 @@ void analyze() {
 
     timelen = sum / it->second.size();
     cout << timelen << "\t| ";
+    sum_time += timelen;
 
     // tisk prumerne rychlosti v m/s a v km/h
-    cout << float(track_length)/float(timelen) << "\t| "
-         << float(track_length)/float(timelen)*3.6 << "\t|" << endl;
+    cout << setw(13) << setprecision(4) << float(track_length)/float(timelen) << " | "
+         << setw(13) << setprecision(4) << float(track_length)/float(timelen)*3.6 << " |" << endl;
+    sum_speed += float(track_length)/float(timelen);
   }
+  for (int i = 0; i < 57; ++i) cout << '-'; cout << endl;
+  int types = statistics.size();
+  cout << fixed << "| all\t| "
+       << sum_cars << "\t| "
+       << setprecision(0) << float(sum_time)/types << "\t| "
+       << setw(13) << setprecision(4) << float(sum_speed)/types << " | "
+       << setw(13) << setprecision(4) << float(sum_speed)/types*3.6 << " |\n";
+
   for (int i = 0; i < 57; ++i) cout << '-'; cout << endl;
 }
 
@@ -199,10 +228,10 @@ int main(int argc, char **argv) {
         extract(5);
       }
     } else {
-      cerr << "Bad option, first argument has to be one of [analyze, convert].\n";
+      cerr << USAGE;
     }
   } else {
-    cerr << "First argumet has to be one of [analyze, convert].\n";
+    cerr << USAGE;
   }
 
   delete car_factory;
