@@ -128,7 +128,7 @@ class Config {
 
     void print();
 
-    int getNumberOfTrackCells() { return site_length > 0 ? track_length/site_length : 1; }
+    int getNumberOfTrackCells() { return site_length > 0 ? int(track_length/site_length) : 1; }
     int getNumberOfCarTypes() { return car_configs.size(); }
 };
 

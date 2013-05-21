@@ -239,7 +239,7 @@ void Config::loadFromGABinaryString(GABinaryString& str, int default_car) {
   for (i = 0, tmp = 0; i < BITS_CELL_LENGTH; ++i, ++position) {
     tmp |= str.bit(position) << i;
   }
-  unit = (CELL_LENGTH_R-CELL_LENGTH_L)/(pow(2,BITS_CELL_LENGTH)-1);
+  unit = (CELL_LENGTH_R-CELL_LENGTH_L)/(pow(2.0,BITS_CELL_LENGTH)-1);
   site_length = CELL_LENGTH_L + float(tmp) * unit;
 
   // Odvozeni poctu typu vozidel z delky genomu
@@ -258,7 +258,7 @@ void Config::loadFromGABinaryString(GABinaryString& str, int default_car) {
     for (i = 0, tmp = 0; i < BITS_CAR_LENGTH; ++i, ++position) {
       tmp |= str.bit(position) << i;
     }
-    unit = (CAR_LENGTH_R-CAR_LENGTH_L)/(pow(2,BITS_CAR_LENGTH)-1);
+    unit = (CAR_LENGTH_R-CAR_LENGTH_L)/(pow(2.0,BITS_CAR_LENGTH)-1);
     car_config.length = roundf((CAR_LENGTH_L + float(tmp) * unit)/site_length);
 
     /**
@@ -267,7 +267,7 @@ void Config::loadFromGABinaryString(GABinaryString& str, int default_car) {
     for (i = 0, tmp = 0; i < BITS_MAX_SPEED; ++i, ++position) {
       tmp |= str.bit(position) << i;
     }
-    unit = (MAX_SPEED_R-MAX_SPEED_L)/(pow(2,BITS_MAX_SPEED)-1);
+    unit = (MAX_SPEED_R-MAX_SPEED_L)/(pow(2.0,BITS_MAX_SPEED)-1);
     car_config.max_speed = roundf(float(MAX_SPEED_L + tmp * unit) / 3.6 / site_length);
     if(car_config.max_speed == 0) car_config.max_speed = 1;
 
@@ -277,7 +277,7 @@ void Config::loadFromGABinaryString(GABinaryString& str, int default_car) {
     for (i = 0, tmp = 0; i < BITS_MIN_SPEED; ++i, ++position) {
       tmp |= str.bit(position) << i;
     }
-    unit = (MIN_SPEED_R-MIN_SPEED_L)/(pow(2,BITS_MIN_SPEED)-1);
+    unit = (MIN_SPEED_R-MIN_SPEED_L)/(pow(2.0,BITS_MIN_SPEED)-1);
     car_config.min_speed = roundf(float(MIN_SPEED_L + tmp * unit) / 3.6 / site_length);
 
     /**
@@ -286,7 +286,7 @@ void Config::loadFromGABinaryString(GABinaryString& str, int default_car) {
     for (i = 0, tmp = 0; i < BITS_SLOWDOWN_P; ++i, ++position) {
       tmp |= str.bit(position) << i;
     }
-    unit = (SLOWDOWN_R-SLOWDOWN_L)/(pow(2,BITS_SLOWDOWN_P)-1);
+    unit = (SLOWDOWN_R-SLOWDOWN_L)/(pow(2.0,BITS_SLOWDOWN_P)-1);
     car_config.slowdown_probability = SLOWDOWN_L + tmp * unit;
 
     /**
@@ -295,7 +295,7 @@ void Config::loadFromGABinaryString(GABinaryString& str, int default_car) {
     for (i = 0, tmp = 0; i < BITS_ACC_P; ++i, ++position) {
       tmp |= str.bit(position) << i;
     }
-    unit = (ACC_R-ACC_L)/(pow(2,BITS_ACC_P)-1);
+    unit = (ACC_R-ACC_L)/(pow(2.0,BITS_ACC_P)-1);
     car_config.acceleration_probability = ACC_L + tmp * unit;
 
     car_configs[car_class] = car_config;
