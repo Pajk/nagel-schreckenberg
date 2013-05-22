@@ -28,6 +28,8 @@ Car *PragueCarFactory::nextCar() {
   // 0:data-type, 1:time out, 2:time in, 3:total time, 4:car type in, 5:car type out
   // EVCEO-EVVN,22-06-2012 04:51:16,22-06-2012 04:43:34,462,-1,2
 
+  // NEXTLINE:
+
   std::vector<std::string> line = nextLine();
 
   if (line.size() == 6 && line.at(0) == "EVCEO-EVVN") {
@@ -45,6 +47,8 @@ Car *PragueCarFactory::nextCar() {
     car->setTimeIn((long)time_in);
 
     int expected_time = atoi(line.at(3).c_str());
+
+    // if (expected_time > 900) goto NEXTLINE;
 
     car->setExpectedTime(expected_time);
 

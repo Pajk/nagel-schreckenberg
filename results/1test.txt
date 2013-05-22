@@ -1,0 +1,64 @@
+Best individual score: 176.52
+400   # current generation
+1.00  # current convergence
+12000 # number of selections since initialization
+10780 # number of crossovers since initialization
+349   # number of mutations since initialization
+12000 # number of replacements since initialization
+10844 # number of genome evaluations since initialization
+201   # number of population evaluations since initialization
+8304.85     # maximum score since initialization
+176.52      # minimum score since initialization
+202.54      # average of all scores ('on-line' performance)
+267.78      # average of maximum scores ('off-line' performance)
+180.57      # average of minimum scores ('off-line' performance)
+
+2226.52     # mean score in initial population
+8304.85     # maximum score in initial population
+337.31      # minimum score in initial population
+2263.92     # standard deviation of initial population
+-1.00 # diversity of initial population (0=identical,-1=unset)
+
+193.66      # mean score in current population
+200.34      # maximum score in current population
+176.52      # minimum score in current population
+5.13  # standard deviation of current population
+-1.00 # diversity of current population (0=identical,-1=unset)
+
+20    # how far back to look for convergence
+1     # how often to record scores
+1     # how often to write scores to file
+generations.data  # name of file to which scores are written
+
+Best individual: 1010101101001000100000110000101
+Score = 176.52
+car_factory = 3
+scf_interval = 20
+ncf_mean = 30
+ncf_deviation = 20.00
+max_time = 0
+periodic_boundary = 0
+site_length = 4.00
+track_length = 5350
+# number of track sites = 1337
+default_car = 0
+table_format = 1
+stats_frequency = 15
+slow_to_stop = 0
+slow_to_start_probability = 0.50
+car 0
+  slowdown_probability = 0.604724
+  acceleration_probability = 0.740945
+  max_speed = 72 (5 cell/s)
+  min_speed = 0 (0 cell/s)
+  length = 20 (5 cells)
+endcar
+ t_from,   t_to,     MAE,    MAPE,   flow, density, cars,  speed,   time
+      0, 172800,  285.10,   28.17,    164,   5.596,   40,  34.74, 582.32
+data/prague/evropska_21_22.csv score: 285.10
+      0,  86400,  192.48,   22.58,    168,   6.368,   41,  33.49, 623.69
+data/prague/evropska_20.csv score: 192.48
+      0,  86400,  255.44,   24.67,    160,   5.635,   40,  35.40, 586.66
+data/prague/evropska_21.csv score: 255.44
+      0,  87300,  326.15,   31.60,    166,   5.386,   41,  34.73, 564.96
+data/prague/evropska_22.csv score: 326.15

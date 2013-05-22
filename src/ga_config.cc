@@ -9,7 +9,11 @@
 
 using namespace std;
 
-#define LOAD_CONFIG(opt) if (line.find(#opt) != string::npos) { sin >> opt; } else
+#define STR(s) #s
+#define GA_LOAD_CONFIG(opt) \
+    if (line.find(STR(opt =)) != string::npos) { \
+        sin >> opt; \
+    } else
 
 void GAConfig::loadFromFile(const char *filename) {
 
@@ -34,45 +38,45 @@ void GAConfig::loadFromFile(const char *filename) {
       continue;
     }
 
-    LOAD_CONFIG(ga)
-    LOAD_CONFIG(population_size)
-    LOAD_CONFIG(mutation_probability)
-    LOAD_CONFIG(crossover_probability)
-    LOAD_CONFIG(number_of_generations)
-    LOAD_CONFIG(score_filename)
-    LOAD_CONFIG(score_frequency)
-    LOAD_CONFIG(flush_frequency)
-    LOAD_CONFIG(replacement_percentage)
-    LOAD_CONFIG(replacement_number)
-    LOAD_CONFIG(number_of_populations)
-    LOAD_CONFIG(migration_number)
-    LOAD_CONFIG(terminator)
-    LOAD_CONFIG(generations_to_convergence)
-    LOAD_CONFIG(convergence_percentage)
-    LOAD_CONFIG(number_of_offspring)
-    LOAD_CONFIG(scaling)
-    LOAD_CONFIG(linear_scaling_multiplier)
-    LOAD_CONFIG(sigma_truncation_multiplier)
-    LOAD_CONFIG(power_scaling_factor)
+    GA_LOAD_CONFIG(ga)
+    GA_LOAD_CONFIG(population_size)
+    GA_LOAD_CONFIG(mutation_probability)
+    GA_LOAD_CONFIG(crossover_probability)
+    GA_LOAD_CONFIG(number_of_generations)
+    GA_LOAD_CONFIG(score_filename)
+    GA_LOAD_CONFIG(score_frequency)
+    GA_LOAD_CONFIG(flush_frequency)
+    GA_LOAD_CONFIG(replacement_percentage)
+    GA_LOAD_CONFIG(replacement_number)
+    GA_LOAD_CONFIG(number_of_populations)
+    GA_LOAD_CONFIG(migration_number)
+    GA_LOAD_CONFIG(terminator)
+    GA_LOAD_CONFIG(generations_to_convergence)
+    GA_LOAD_CONFIG(convergence_percentage)
+    GA_LOAD_CONFIG(number_of_offspring)
+    GA_LOAD_CONFIG(scaling)
+    GA_LOAD_CONFIG(sigma_truncation_multiplier)
+    GA_LOAD_CONFIG(power_scaling_factor)
+    GA_LOAD_CONFIG(linear_scaling_multiplier)
 
-    LOAD_CONFIG(car_types)
-    LOAD_CONFIG(default_car)
-    LOAD_CONFIG(train_file)
-    LOAD_CONFIG(test_file)
-    LOAD_CONFIG(slow_to_start_probability)
-    LOAD_CONFIG(slow_to_stop)
-    LOAD_CONFIG(stats_frequency)
+    GA_LOAD_CONFIG(car_types)
+    GA_LOAD_CONFIG(default_car)
+    GA_LOAD_CONFIG(train_file)
+    GA_LOAD_CONFIG(test_file)
+    GA_LOAD_CONFIG(slow_to_start_probability)
+    GA_LOAD_CONFIG(slow_to_stop)
+    GA_LOAD_CONFIG(stats_frequency)
 
-    LOAD_CONFIG(track_length)
-    LOAD_CONFIG(periodic_boundary)
-    LOAD_CONFIG(car_factory)
-    LOAD_CONFIG(scf_interval)
-    LOAD_CONFIG(ncf_deviation)
-    LOAD_CONFIG(ncf_mean)
-    LOAD_CONFIG(max_time)
+    GA_LOAD_CONFIG(track_length)
+    GA_LOAD_CONFIG(periodic_boundary)
+    GA_LOAD_CONFIG(car_factory)
+    GA_LOAD_CONFIG(scf_interval)
+    GA_LOAD_CONFIG(ncf_deviation)
+    GA_LOAD_CONFIG(ncf_mean)
+    GA_LOAD_CONFIG(max_time)
 
-    LOAD_CONFIG(objective_value)
-    LOAD_CONFIG(minimize)
+    GA_LOAD_CONFIG(objective_value)
+    GA_LOAD_CONFIG(minimize)
     {
       // ..
     }

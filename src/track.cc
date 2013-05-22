@@ -86,6 +86,13 @@ Track::~Track() {
  */
 void Track::step() {
 
+  calculateSpeeds();
+  moveCars();
+
+}
+
+void Track::calculateSpeeds() {
+
   /**
    * Na vozovku vjizdi auto za podminek:
    * - ve fronte je pripraveno auto
@@ -98,6 +105,27 @@ void Track::step() {
     last_car = next_car;
     next_car = NULL;
   }
+
+  /**
+   * Pokud neceka na vjeti na vozovku zadne auto, ziska se z car factory
+   * nasledujici v poradi. Cas vjeti na vozovku se upravi podle casu, kdy
+   * na vozovku vjelo prvni auto, aby cas sedel s casem simulace.
+   */
+  if (!next_car) {
+    next_car = car_factory->nextCar();
+    if (next_car) {
+      next_car->setTimeIn(next_car->getTimeIn() - time_offset);
+    }
+  }
+
+  Car * car = last_car;
+  while (car) {
+    car->calculateSpeed();
+    car = car->getCarInFront();
+  }
+}
+
+void Track::moveCars() {
 
   /**
    * Vykonani jednoho kroku simulace, tzn. vypoctu novych rychlosti a posunu
@@ -120,7 +148,7 @@ void Track::step() {
     cars_count++;
 
     tmp_car = car->getCarInFront();
-    car->step();
+    car->move();
     car = tmp_car;
   }
 
@@ -131,18 +159,6 @@ void Track::step() {
   }
   // if (harmean_speed) { harmean_speed = cars_count / harmean_speed; }
   world->logMeanSpeed(mean_speed);
-
-  /**
-   * Pokud neceka na vjeti na vozovku zadne auto, ziska se z car factory
-   * nasledujici v poradi. Cas vjeti na vozovku se upravi podle casu, kdy
-   * na vozovku vjelo prvni auto, aby cas sedel s casem simulace.
-   */
-  if (!next_car) {
-    next_car = car_factory->nextCar();
-    if (next_car) {
-      next_car->setTimeIn(next_car->getTimeIn() - time_offset);
-    }
-  }
 }
 
 /**

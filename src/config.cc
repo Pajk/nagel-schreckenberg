@@ -10,8 +10,16 @@
 
 using namespace std;
 
-#define LOAD_CAR_CONFIG(opt) if (line.find(#opt, 2) != string::npos) { csin >> car_config.opt; }
-#define LOAD_CONFIG(opt) if (line.find(#opt) != string::npos) { sin >> opt; loaded++; } else
+
+#define STR(s) #s
+#define LOAD_CAR_CONFIG(opt) \
+  if (line.find(STR(opt =), 2) != string::npos) { \
+    csin >> car_config.opt; \
+  }
+#define LOAD_CONFIG(opt) \
+  if (line.find(STR(opt =)) != string::npos) { \
+    sin >> opt; loaded++; \
+  } else
 
 Config::~Config() {
   if (samples_file != NULL) {

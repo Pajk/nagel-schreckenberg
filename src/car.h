@@ -69,6 +69,8 @@ class Car {
      * a posunu vozidla na novou pozici
      */
     void step();
+    void calculateSpeed();
+    void move();
 
   protected:
 

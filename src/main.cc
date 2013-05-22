@@ -9,6 +9,7 @@
 #include <iostream>
 #include <unistd.h>
 #include <cstring>
+#include <string>
 
 #include "track.h"
 #include "car.h"
@@ -48,6 +49,7 @@ Config * config;
 using std::cout;
 using std::cerr;
 using std::endl;
+using std::string;
 
 int main(int argc, char **argv) {
 
@@ -97,6 +99,11 @@ void initAllegro(int width) {
   if (depth == 0) depth = 32;
   screen_width -= 100;
   screen_height -= 100;
+
+  // pokud je pocet bunek vozovky mensi nez rozliseni obrazovky, nebude se skalovat
+  if (config->getNumberOfTrackCells() < screen_width) {
+    screen_width = config->getNumberOfTrackCells();
+  }
 
   set_color_depth(depth);
   res = set_gfx_mode(GFX_AUTODETECT_WINDOWED, screen_width, screen_height, 2*screen_width, 0);
@@ -272,20 +279,25 @@ void guiLoop(World * world) {
 #ifdef ASCII
 void asciiLoop(World * world) {
   while (world->isLive()) {
-
-      world->step();
+      string buff;
+      world->calculateSpeeds();
       Cell * cell = world->getTrack()->getFirstCell();
 
       for (int i = 0; i < world->getTrack()->getLength(); ++i) {
         if (cell->isOccupied()) {
-          cout << cell->getCar()->getCurrentSpeed();
+          if (cell->getCar()->getCurrentSpeed() < 0) {
+            cout << buff << cell->getCar()->getCurrentSpeed();
+            exit(-1);
+          }
+          buff.push_back(cell->getCar()->getCurrentSpeed() + '0');
         } else {
-          cout << '.';
+          buff.push_back('.');
         }
         cell = cell->getCellFront();
       }
-      cout << endl;
-    }
+      cout << "| " << buff << " |" << endl;
+      world->moveCars();
+  }
 }
 #endif
 

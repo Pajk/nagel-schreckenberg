@@ -22,15 +22,17 @@ World::World(Statistics * statistics, Config * config) {
 
 World::~World() {}
 
-/**
- * Krok simulace
- */
-void World::step() {
-
-  // vykonani kroku simulace
+void World::calculateSpeeds() {
   if (track != NULL) {
-    track->step();
+    track->calculateSpeeds();
   }
+}
+
+void World::moveCars() {
+  // vykonani kroku simulace
+  if (track == NULL) return;
+
+  track->moveCars();
 
   // smazani aut, ktera opustila vozovku
   if (delete_list) {
@@ -57,6 +59,14 @@ void World::step() {
   if (sim_time%(config->getStatsFrequency()) == 0) {
     statistics->calculatePrintAndReset(sim_time);
   }
+}
+
+/**
+ * Krok simulace
+ */
+void World::step() {
+  calculateSpeeds();
+  moveCars();
 }
 
 bool World::isLive() {

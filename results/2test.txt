@@ -1,0 +1,92 @@
+Best individual score: 224.92
+400 # current generation
+1.00    # current convergence
+12000   # number of selections since initialization
+10822   # number of crossovers since initialization
+1665    # number of mutations since initialization
+12000   # number of replacements since initialization
+10994   # number of genome evaluations since initialization
+201 # number of population evaluations since initialization
+9176.91 # maximum score since initialization
+224.92  # minimum score since initialization
+240.65  # average of all scores ('on-line' performance)
+286.39  # average of maximum scores ('off-line' performance)
+231.99  # average of minimum scores ('off-line' performance)
+
+2471.94 # mean score in initial population
+9176.91 # maximum score in initial population
+256.44  # minimum score in initial population
+2453.47 # standard deviation of initial population
+-1.00   # diversity of initial population (0=identical,-1=unset)
+
+234.78  # mean score in current population
+252.78  # maximum score in current population
+224.92  # minimum score in current population
+6.29    # standard deviation of current population
+-1.00   # diversity of current population (0=identical,-1=unset)
+
+20  # how far back to look for convergence
+1   # how often to record scores
+1   # how often to write scores to file
+generations.data    # name of file to which scores are written
+
+Best individual: 1111011011110000110100101000110001101100011100000000011010101011110101001000011110010100000111110011111100000000011011101000001000001111110
+Score = 224.92
+car_factory = 3
+scf_interval = 20
+ncf_mean = 30
+ncf_deviation = 20.00
+max_time = 0
+periodic_boundary = 0
+site_length = 10.00
+track_length = 5350
+# number of track sites = 535
+default_car = 0
+table_format = 1
+stats_frequency = 15
+slow_to_stop = 0
+slow_to_start_probability = 0.50
+car 0
+  slowdown_probability = 0.233071
+  acceleration_probability = 0.570079
+  max_speed = 72 (2 cell/s)
+  min_speed = 0 (0 cell/s)
+  length = 10 (1 cells)
+endcar
+car 1
+  slowdown_probability = 0
+  acceleration_probability = 0.54252
+  max_speed = 36 (1 cell/s)
+  min_speed = 0 (0 cell/s)
+  length = 20 (2 cells)
+endcar
+car 2
+  slowdown_probability = 0.415748
+  acceleration_probability = 0.514961
+  max_speed = 72 (2 cell/s)
+  min_speed = 0 (0 cell/s)
+  length = 10 (1 cells)
+endcar
+car 3
+  slowdown_probability = 0.39685
+  acceleration_probability = 0.3
+  max_speed = 108 (3 cell/s)
+  min_speed = 0 (0 cell/s)
+  length = 10 (1 cells)
+endcar
+car 4
+  slowdown_probability = 0.0125984
+  acceleration_probability = 0.647244
+  max_speed = 108 (3 cell/s)
+  min_speed = 0 (0 cell/s)
+  length = 10 (1 cells)
+endcar
+ t_from,   t_to,     MAE,    MAPE,   flow, density, cars,  speed,   time
+      0, 172800,  285.06,   30.64,    164,   5.253,   40,  31.93, 583.99
+data/prague/evropska_21_22.csv score: 285.06
+      0,  86400,  236.40,   27.90,    168,   5.462,   41,  31.84, 587.54
+data/prague/evropska_20.csv score: 236.40
+      0,  86400,  276.71,   30.81,    160,   5.155,   40,  31.97, 583.41
+data/prague/evropska_21.csv score: 276.71
+      0,  87300,  313.98,   31.87,    166,   5.328,   41,  31.67, 588.59
+data/prague/evropska_22.csv score: 313.98

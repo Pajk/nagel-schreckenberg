@@ -88,6 +88,8 @@ class Track {
      * Vykona jeden krok simulace, posune vozidla na nove pozice.
      */
     void step();
+    void calculateSpeeds();
+    void moveCars();
 
     /**
      * Predikat, ktery znaci, ze jsou na vozovce jeste nejaka vozidla nebo

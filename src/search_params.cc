@@ -28,7 +28,7 @@ bool stop_evolution = false;
 
 // nazev souboru, do ktere se ulozi nejlepsi nalezene reseni:
 #define OUTPUT_FILE "results.txt"
-#define GA_CONFIG_FILE "configs/ga.config"
+#define GA_CONFIG_FILE "configs/default.ga_config"
 
 float Objective(GAGenome & g);
 int MultiPointCrossover(const GAGenome& p1, const GAGenome& p2, GAGenome* c1, GAGenome* c2);
@@ -149,10 +149,6 @@ int main(int argc, char **argv) {
       }
     }
 
-    // moznost nastaveni parametru ze souboru a pres argumenty prikazove radky
-    // ga.parameters(GA_PARAMS_FILE, gaTrue);
-    ga.parameters(argc, argv);
-
     switch (ga_config->getTerminator()) {
       case 2:
         ga.terminator(GAGeneticAlgorithm::TerminateUponConvergence);
@@ -169,6 +165,9 @@ int main(int argc, char **argv) {
         ga.nGenerations(ga_config->getNumberOfGenerations());
         break;
     }
+
+    // moznost nastaveni parametru pres argumenty prikazove radky
+    ga.parameters(argc, argv);
 
     // start evolucniho procesu
     cout << "== Initial population\n";

@@ -50,6 +50,8 @@ class World {
      * k inkrementaci casu simulace.
      */
     void step();
+    void calculateSpeeds();
+    void moveCars();
 
     /**
      * Predikat urcujici, zda ma simulace jeste pokracovat. Pokud uz na silnicich

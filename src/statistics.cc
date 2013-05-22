@@ -98,7 +98,7 @@ void Statistics::calculate(long time_to) {
         long interval = interval_data.t_to - interval_data.t_from;
         interval_data.flow = float(interval_data.cars) / (interval / 3600.0);
 
-        // vypocet prumerne rychlosti v jednotkach pocet bunek za sekundu
+        // vypocet prumerne rychlosti (km/h)
         interval_data.mean_speed = (config->getTrackLength() / 1000.0)
             / (interval_data.mean_travel_time / 3600);
 
@@ -178,27 +178,30 @@ void Statistics::summaryCalculate() {
     summary_data.min_error = (*it).min_error;
     summary_data.max_error = (*it).max_error;
 
+    int size = 0;
+
     for (; it != history.end(); ++it) {
 
-        summary_data.mae += (*it).mae;
-        summary_data.mape += (*it).mape;
-        summary_data.rmse += (*it).rmse;
-        summary_data.flow += (*it).flow;
-        summary_data.density += (*it).density;
-        summary_data.mean_speed += (*it).mean_speed;
-        summary_data.cars += (*it).cars;
-        summary_data.faster_cars += (*it).faster_cars;
-        summary_data.slower_cars += (*it).slower_cars;
-        summary_data.faster_mae += (*it).faster_mae;
-        summary_data.slower_mae += (*it).slower_mae;
-        summary_data.mean_travel_time += (*it).mean_travel_time;
-        summary_data.mean_expected_travel_time += (*it).mean_expected_travel_time;
+        if ((*it).cars > 0) {
+            summary_data.mae += (*it).mae;
+            summary_data.mape += (*it).mape;
+            summary_data.rmse += (*it).rmse;
+            summary_data.flow += (*it).flow;
+            summary_data.density += (*it).density;
+            summary_data.mean_speed += (*it).mean_speed;
+            summary_data.cars += (*it).cars;
+            summary_data.faster_cars += (*it).faster_cars;
+            summary_data.slower_cars += (*it).slower_cars;
+            summary_data.faster_mae += (*it).faster_mae;
+            summary_data.slower_mae += (*it).slower_mae;
+            summary_data.mean_travel_time += (*it).mean_travel_time;
+            summary_data.mean_expected_travel_time += (*it).mean_expected_travel_time;
+            size++;
+        }
     }
 
     --it;
     summary_data.t_to = (*it).t_to;
-
-    int size = history.size();
 
     summary_data.mae /= size;
     summary_data.mape /= size;
@@ -221,7 +224,7 @@ void Statistics::summaryPrint() {
     bool stmp = suppress_output;
     interval_data = summary_data;
     if (!suppress_output) {
-        cout << "================================================================\n";
+        cout << "========================================================================\n";
     }
     suppress_output = false;
     print();

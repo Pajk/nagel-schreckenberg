@@ -15,8 +15,8 @@ migration_number = 5
 # 4 - GAIncrementalGA
 number_of_offspring = 2
 
-population_size = 20
-mutation_probability = 0.01
+population_size = 30
+mutation_probability = 0.001
 crossover_probability = 0.9
 score_filename = generations.data
 score_frequency = 1
@@ -26,7 +26,7 @@ flush_frequency = 1
 
 terminator = 1
 # 1 - TerminateUponGeneration
-number_of_generations = 70
+number_of_generations = 400
 # 2 - TerminateUponConvergence
 generations_to_convergence = 20
 # 3 - TerminateUponPopConvergence
@@ -34,7 +34,7 @@ convergence_percentage = 0.99
 
 #== skalovani ohodnoceni jedince na fitness hodnotu ============================
 
-scaling = 2
+scaling = 1
 # 1 - GANoScaling
 # 2 - GALinearScaling
 linear_scaling_multiplier = 1.2
@@ -46,7 +46,7 @@ power_scaling_factor = 1.0005
 #== nastaveni podoby genomu ====================================================
 
 # pocet typu vozidel, ktere budou evoluci vyhledavany
-car_types = 2
+car_types = 5
 # vychozi typ vozidla, pokud v datech neni typ znam
 default_car = 0
 

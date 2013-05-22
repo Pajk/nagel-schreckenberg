@@ -1,0 +1,94 @@
+#== nastaveni parametru knihovny GALib =========================================
+# popis GALib parametru:
+# http://lancet.mit.edu/ga/dist/galibdoc.pdf
+
+# vyber GA, ktery ma byt pouzit
+ga = 1
+# Dostupne GA:
+# 1 - GASimpleGA
+# 2 - GASteadyStateGA
+replacement_percentage = 0.8
+# 3 - GADemeGA
+replacement_number = 5
+number_of_populations = 10
+migration_number = 5
+# 4 - GAIncrementalGA
+number_of_offspring = 2
+
+population_size = 30
+mutation_probability = 0.001
+crossover_probability = 0.9
+score_filename = 6test.generations
+score_frequency = 1
+flush_frequency = 1
+
+#== podminky ukonceni evoluce ==================================================
+
+terminator = 1
+# 1 - TerminateUponGeneration
+number_of_generations = 200
+# 2 - TerminateUponConvergence
+generations_to_convergence = 20
+# 3 - TerminateUponPopConvergence
+convergence_percentage = 0.99
+
+#== skalovani ohodnoceni jedince na fitness hodnotu ============================
+
+scaling = 1
+# 1 - GANoScaling
+# 2 - GALinearScaling
+linear_scaling_multiplier = 1.2
+# 3 - GASigmaTruncationScaling
+sigma_truncation_multiplier = 2.0
+# 4 - GAPowerLawScaling
+power_scaling_factor = 1.0005
+
+#== nastaveni podoby genomu ====================================================
+
+# pocet typu vozidel, ktere budou evoluci vyhledavany
+car_types = 1
+# vychozi typ vozidla, pokud v datech neni typ znam
+default_car = 0
+
+#== vstupni data evoluce =======================================================
+
+train_file = data/prague/evropska_20.csv
+test_file = data/prague/evropska_21_22.csv
+
+#== nastaveni simulatoru =======================================================
+
+# genom obsahuje pouze nastaveni vozovky (delku bunky) a jednotlivych typu
+# vozidel (delka vozidla, max a min rychlost, pravdepodobnost zpomaleni a zrychleni)
+# zbyvajici parametry simulace je nutne nastavit zde
+
+track_length = 5350
+
+slow_to_stop = 1
+slow_to_start_probability = 0.5
+
+stats_frequency = 15
+
+# 1 Simple, 2 Normal, 3 Prague
+car_factory = 3
+scf_interval = 20
+ncf_mean = 30
+ncf_deviation = 20
+
+periodic_boundary = 0
+
+# pri pouziti nahodneho generatoru je treba omezit simulaci casem
+max_time = 0 [h]
+
+# jakou hodnotu se snazime optimalizovat
+# nazev parametru - typ ulohy (minimalizacni/maximalizacni)
+# 1 MAE - min
+# 2 MAPE - min
+# 3 RMSE - min
+# 4 flow - max
+# 5 mean_speed - max
+# 6 cars - max - pocet vozidel
+# 7 mean_travel_time - min - prumerna doba prujezdu
+objective_value = 1
+
+# nastaveni zda se ma hledat minimalni ohodnoceni
+minimize = 1
