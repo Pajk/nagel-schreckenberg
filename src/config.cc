@@ -66,6 +66,7 @@ int Config::loadFromFile(const char *filename) {
     LOAD_CONFIG(max_time)
     LOAD_CONFIG(slow_to_stop)
     LOAD_CONFIG(slow_to_start_probability)
+    LOAD_CONFIG(true_slowdown)
     if (line.find("samples_file") != string::npos) {
 
       if (samples_file == NULL) samples_file = new char[255];
@@ -157,7 +158,8 @@ void Config::print() {
        << "table_format = " << table_format << endl
        << "stats_frequency = " << stats_frequency/60 << endl
        << "slow_to_stop = " << slow_to_stop << endl
-       << "slow_to_start_probability = " << slow_to_start_probability << endl;
+       << "slow_to_start_probability = " << slow_to_start_probability << endl
+       << "true_slowdown = " << true_slowdown << endl;
 
     for (map<int,CarConfig>::iterator it = car_configs.begin(); it != car_configs.end(); ++it) {
         CarConfig cc = it->second;

@@ -24,7 +24,7 @@ flush_frequency = 1
 
 #== podminky ukonceni evoluce ==================================================
 
-terminator = 1
+terminator = 2
 # 1 - TerminateUponGeneration
 number_of_generations = 100
 # 2 - TerminateUponConvergence
@@ -34,7 +34,7 @@ convergence_percentage = 0.99
 
 #== skalovani ohodnoceni jedince na fitness hodnotu ============================
 
-scaling = 2
+scaling = 3
 # 1 - GANoScaling
 # 2 - GALinearScaling
 linear_scaling_multiplier = 1.2
@@ -63,7 +63,7 @@ test_file = data/prague/evropska_21_22.csv
 
 track_length = 5350
 
-slow_to_stop = 0
+slow_to_stop = 1
 slow_to_start_probability = 0.5
 
 stats_frequency = 15

@@ -48,6 +48,7 @@ class GAConfig {
   GA_CONFIG_ITEM(float,   NCFDeviation,          ncf_deviation)
   GA_CONFIG_ITEM(int,     NCFMean,               ncf_mean)
   GA_CONFIG_ITEM(unsigned long, MaxTime,         max_time)
+  GA_CONFIG_ITEM(bool,    TrueSlowdown,          true_slowdown)
 
   GA_CONFIG_ITEM(bool,    Minimize,               minimize)
   GA_CONFIG_ITEM(int,     ObjectiveValue,         objective_value)
@@ -85,6 +86,7 @@ class GAConfig {
       stats_frequency = 0;
       objective_value = 1;
       minimize = true;
+      true_slowdown = false;
     }
 
     ~GAConfig() {

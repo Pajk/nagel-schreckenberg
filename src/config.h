@@ -19,20 +19,20 @@
 #define BITS_CAR (BITS_CAR_LENGTH + BITS_MAX_SPEED + BITS_MIN_SPEED + BITS_SLOWDOWN_P + BITS_ACC_P)
 
 // krajni hodnoty jednotlivych nastaveni
-#define CELL_LENGTH_L 1
-#define CELL_LENGTH_R 10
+#define CELL_LENGTH_L 0.3
+#define CELL_LENGTH_R 15
 
 #define CAR_LENGTH_L 5
 #define CAR_LENGTH_R 20
 
 #define MAX_SPEED_L 10
-#define MAX_SPEED_R 120
+#define MAX_SPEED_R 70
 
 #define MIN_SPEED_L 0
 #define MIN_SPEED_R 10
 
 #define SLOWDOWN_L 0.0
-#define SLOWDOWN_R 0.8
+#define SLOWDOWN_R 0.5
 
 #define ACC_L 0.3
 #define ACC_R 1.0
@@ -88,6 +88,7 @@ class Config {
   CONFIG_ITEM(unsigned long, MaxTime, max_time)
   CONFIG_ITEM(bool, SlowToStop, slow_to_stop)
   CONFIG_ITEM(float, SlowToStartProbability, slow_to_start_probability)
+  CONFIG_ITEM(bool, TrueSlowdown, true_slowdown)
 
   std::map <int, CarConfig> car_configs;
 
@@ -108,6 +109,7 @@ class Config {
       slow_to_stop = false;
       slow_to_start_probability = 0.5;
       samples_file = NULL;
+      true_slowdown = false;
     }
     ~Config();
 

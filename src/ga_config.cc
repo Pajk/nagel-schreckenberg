@@ -74,6 +74,7 @@ void GAConfig::loadFromFile(const char *filename) {
     GA_LOAD_CONFIG(ncf_deviation)
     GA_LOAD_CONFIG(ncf_mean)
     GA_LOAD_CONFIG(max_time)
+    GA_LOAD_CONFIG(true_slowdown)
 
     GA_LOAD_CONFIG(objective_value)
     GA_LOAD_CONFIG(minimize)
@@ -131,5 +132,6 @@ void GAConfig::print() {
          << "periodic_boundary = " << periodic_boundary << endl
          << "max_time = " << max_time/3600 << endl
          << "objective_value = " << objective_value << endl
-         << "minimize = " << minimize << endl << endl;
+         << "minimize = " << minimize << endl
+         << "true_slowdown = " << true_slowdown << endl << endl;
 }

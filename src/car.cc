@@ -106,7 +106,7 @@ void Car::slowToStopStep() {
     slow_start = false;
     slow_start_applied = true;
   } else if (current_speed == 0 && free_cells > 1 &&
-    rand() < RAND_MAX*config->getSlowToStartProbability()) {
+    double(rand())/RAND_MAX <= config->getSlowToStartProbability()) {
     slow_start = true;
     slow_start_applied = true;
   }
@@ -159,7 +159,7 @@ void Car::slowToStopStep() {
     /**
      * 5) nahodne zpomaleni
      */
-    if (rand() < RAND_MAX*slowdown_probability && current_speed > 0) {
+    if (double(rand())/RAND_MAX <= slowdown_probability && current_speed > 0) {
       current_speed--;
     }
     #ifdef DEBUG_STS
@@ -175,12 +175,14 @@ void Car::basicStep() {
 
   old_position = position;
   int free_cells = getFreeCellsCount(max_speed);
+  bool accelerated = false;
 
   // 1) akceleracce
-  if (rand() < RAND_MAX*acceleration_probability && current_speed < max_speed
+  if (double(rand())/RAND_MAX <= acceleration_probability && current_speed < max_speed
     && free_cells > current_speed) {
 
     current_speed++;
+    accelerated = true;
   }
 
   // 2) pokud je predchozi auto vzdalene mene nez je aktualni rychlost, vozidlo
@@ -190,8 +192,9 @@ void Car::basicStep() {
   }
 
   // 3) randomizace - zpomaleni
-  if (rand() < RAND_MAX*slowdown_probability && current_speed > min_speed) {
+  if (double(rand())/RAND_MAX <= slowdown_probability && current_speed > min_speed) {
     current_speed--;
+    if(config->getTrueSlowdown() && accelerated && current_speed > 0) current_speed--;
   }
 }
 

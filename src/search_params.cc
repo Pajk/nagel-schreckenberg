@@ -408,5 +408,6 @@ void initConfig(Config * config) {
   config->setNCFMean(ga_config->getNCFMean());
   config->setMaxTime(ga_config->getMaxTime());
   config->setCarFactory(ga_config->getCarFactory());
+  config->setTrueSlowdown(ga_config->getTrueSlowdown());
   config->setTableFormat(true);
 }
