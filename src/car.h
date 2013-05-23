@@ -1,3 +1,9 @@
+/*
+ * Datum:   20.5.2013
+ * Autor:   Pavel Pokorny, xpokor12@stud.fit.vutbr.cz
+ * Projekt: DP - Kalibrace mikrosimulacniho modelu dopravy
+ */
+
 #ifndef _CAR_H
 #define _CAR_H
 
