@@ -67,6 +67,7 @@ int Config::loadFromFile(const char *filename) {
     LOAD_CONFIG(slow_to_stop)
     LOAD_CONFIG(slow_to_start_probability)
     LOAD_CONFIG(true_slowdown)
+    LOAD_CONFIG(stcf_column)
     if (line.find("samples_file") != string::npos) {
 
       if (samples_file == NULL) samples_file = new char[255];

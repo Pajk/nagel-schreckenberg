@@ -84,6 +84,7 @@ class Config {
   CONFIG_ITEM(int, SCFInterval, scf_interval)
   CONFIG_ITEM(float, NCFDeviation, ncf_deviation)
   CONFIG_ITEM(int, NCFMean, ncf_mean)
+  CONFIG_ITEM(std::string, STCFColumn, stcf_column)
   CONFIG_ITEM(char *, SamplesFile, samples_file)
   CONFIG_ITEM(unsigned long, MaxTime, max_time)
   CONFIG_ITEM(bool, SlowToStop, slow_to_stop)

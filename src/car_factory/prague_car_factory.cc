@@ -11,16 +11,18 @@
 
 using namespace std;
 
-/**
- * Pomocna funkce pro zpracovani retezce s casem
- */
-time_t parseTime(const char * time_string) {
+namespace Prague {
+  /**
+   * Pomocna funkce pro zpracovani retezce s casem
+   */
+  time_t parseTime(const char * time_string) {
 
-  struct tm tm_struct;
-  strptime(time_string, "%d-%m-%Y %H:%M:%S", &tm_struct);
-  tm_struct.tm_isdst = -1;
+    struct tm tm_struct;
+    strptime(time_string, "%d-%m-%Y %H:%M:%S", &tm_struct);
+    tm_struct.tm_isdst = -1;
 
-  return mktime(&tm_struct);
+    return mktime(&tm_struct);
+  }
 }
 
 Car *PragueCarFactory::nextCar() {
@@ -38,7 +40,7 @@ Car *PragueCarFactory::nextCar() {
 
     Car *car = new Car(current_id++, car_class, config);
 
-    time_t time_in = parseTime(line.at(2).c_str());
+    time_t time_in = Prague::parseTime(line.at(2).c_str());
 
     if (time_in == -1) {
       cerr << "Error while parsing time in.\n";
@@ -65,8 +67,8 @@ struct lessThanTimeIn {
 
       time_t v1_time_in, v2_time_in;
 
-      v1_time_in = parseTime(v1.at(2).c_str());
-      v2_time_in = parseTime(v2.at(2).c_str());
+      v1_time_in = Prague::parseTime(v1.at(2).c_str());
+      v2_time_in = Prague::parseTime(v2.at(2).c_str());
 
       if (v1_time_in == -1 || v2_time_in == -1) {
         cerr << "Error while parsing time in.\n";
@@ -81,8 +83,8 @@ struct lessThanTimeOut {
 
       time_t v1_time_out, v2_time_out;
 
-      v1_time_out = parseTime(v1.at(1).c_str());
-      v2_time_out = parseTime(v2.at(1).c_str());
+      v1_time_out = Prague::parseTime(v1.at(1).c_str());
+      v2_time_out = Prague::parseTime(v2.at(1).c_str());
 
       if (v1_time_out == -1 || v2_time_out == -1) {
         cerr << "Error while parsing time in.\n";

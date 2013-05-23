@@ -16,6 +16,7 @@
 #include "car_factory/simple_car_factory.h"
 #include "car_factory/prague_car_factory.h"
 #include "car_factory/normal_car_factory.h"
+#include "car_factory/seattle_car_factory.h"
 #include "config.h"
 #include "statistics.h"
 #include "cell.h"
@@ -155,6 +156,17 @@ CarFactory * getCarFactory(Config * config, int argc, char ** argv) {
       return new SimpleCarFactory(config);
     case 2:
       return new NormalCarFactory(config);
+    case 4:
+      if (argc >=3) {
+        cout << "Loading samples from '" << argv[2] << "'.\n";
+        return new SeattleCarFactory(argv[2], config);
+      } else if(config->getSamplesFile() != NULL) {
+        cout << "Loading samples from '" << config->getSamplesFile() << "'.\n";
+        return new SeattleCarFactory(config->getSamplesFile(), config);
+      } else {
+        cout << "Loading samples from '" << DEFAULT_SAMPLES_FILE << "'.\n";
+        return new SeattleCarFactory(DEFAULT_SAMPLES_FILE, config);
+      }
     case 3:
     default:
       if (argc >=3) {
