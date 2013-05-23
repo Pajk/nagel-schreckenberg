@@ -1,0 +1,78 @@
+# Nastaveni simulace
+
+#== generator vozidel ==========================================================
+
+car_factory = 2
+# Dostupne generatory:
+# 1 - jednoduchy deterministicky generator
+scf_interval = 20
+# 2 - normalni gaussovo rozlozeni
+ncf_mean = 500
+ncf_deviation = 20
+# 3 - nacita casy vozidel z csv dat z Prahy ve formatu:
+# EVCEO-EVVN,20-06-2012 00:18:22,20-06-2012 00:10:12,490,-1,1
+
+# soubor ze ktereho se maji nacitat data, pokud je aktivovan odpovidajici generator
+samples_file = data/prague/evropska_all.csv
+
+#== nastaveni simulace =========================================================
+
+# delka simulace v hodinach, pokud se nastavi 0, neni simulace
+# omezena casem (pri pouziti csv je ukoncena po projeti vsech aut)
+max_time = 0 [h]
+
+#== parametry vozovky ==========================================================
+
+# moznost zapnout periodicke hranicni podminky
+periodic_boundary = 1
+
+# site_length - delka jedne bunky [m]
+site_length = 7.5
+
+# track_length - delka trasy [m]
+track_length = 10000
+
+#== parametry vozidel ==========================================================
+
+# default_car - vychozi typ vozidla, pokud neni znam typ
+default_car = 0
+
+# slowdown_probability - pravdepodobnost zpomaleni
+# acceleration_probability - pravdepodobnost zrychleni
+# max_speed - maximalni rychlost [km/h]
+# min_speed - hranice minimalni rychlosti [km/h]
+# length - delka vozidla v metrech [m]
+
+car 0
+  slowdown_probability = 0.3
+  acceleration_probability = 1.0
+  max_speed = 50 [km/h]
+  min_speed = 0 [km/h]
+  length = 7.5 [m]
+endcar
+
+# Typ vozidel v datech z ulice Evropska, Praha
+# 1 - osobni automobil do 3.5 tuny
+# 2 - dodavka do 3.5 tuny
+# 3 - autobus / karosa 11.5m
+# 4 - nakladni vozidlo do 6 tun
+# 5 - nakladni vozidlo nad 6 tun
+
+#== statistiky =================================================================
+
+# table_format - 1/0 zapne/vypne tabulkovy vypis statistik, ktery je vhodny
+# pro dalsi zpracovani, napr. vykresleni grafu
+table_format = 1
+
+# stats_frequency - delka casoveho intervalu po kterem se maji vypocitat
+# a vytisknout statisticke udaje, v minutach
+stats_frequency = 15 [min]
+
+#== rozsireni modelu ===========================================================
+
+# aktivuje rozsireni modelu o Slow-to-Start a Slow-to-Stop pravidla
+slow_to_stop = 0
+
+# pokud je aktivovan rozsireny rezim, je treba nastavit pravdepodobnost
+# s jakou se maji aplikovat slow to start pravidla (p_slow)
+slow_to_start_probability = 0.5

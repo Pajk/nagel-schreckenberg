@@ -1,0 +1,57 @@
+car_factory = 2
+scf_interval = 500
+ncf_mean = 500
+ncf_deviation = 100
+max_time = 0
+periodic_boundary = 1
+site_length = 0.55
+track_length = 10000
+# number of track sites = 9741
+default_car = 0
+table_format = 1
+stats_frequency = 15
+slow_to_stop = 1
+slow_to_start_probability = 0.50
+true_slowdown = 1
+car 0
+  slowdown_probability = 0.174194
+  acceleration_probability = 0.412903
+  max_speed = 57.3371 (29 cell/s)
+  min_speed = 0 (0 cell/s)
+  length = 10.4349 (19 cells)
+endcar
+car 1
+  slowdown_probability = 0.270968
+  acceleration_probability = 0.729032
+  max_speed = 51.4057 (26 cell/s)
+  min_speed = 9.88571 (5 cell/s)
+  length = 18.673 (34 cells)
+endcar
+car 2
+  slowdown_probability = 0.251613
+  acceleration_probability = 0.909677
+  max_speed = 55.36 (28 cell/s)
+  min_speed = 7.90857 (4 cell/s)
+  length = 17.5746 (32 cells)
+endcar
+car 3
+  slowdown_probability = 0.445161
+  acceleration_probability = 0.796774
+  max_speed = 41.52 (21 cell/s)
+  min_speed = 9.88571 (5 cell/s)
+  length = 19.7714 (36 cells)
+endcar
+car 4
+  slowdown_probability = 0.251613
+  acceleration_probability = 0.570968
+  max_speed = 61.2914 (31 cell/s)
+  min_speed = 0 (0 cell/s)
+  length = 2.74603 (5 cells)
+endcar
+car 5
+  slowdown_probability = 0.154839
+  acceleration_probability = 0.683871
+  max_speed = 35.5886 (18 cell/s)
+  min_speed = 0 (0 cell/s)
+  length = 4.39365 (8 cells)
+endcar

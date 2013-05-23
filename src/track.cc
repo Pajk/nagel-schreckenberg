@@ -157,6 +157,24 @@ void Track::moveCars() {
   if (cars_count) {
     mean_speed = mean_speed / cars_count;
   }
+
+  // vypocet hustoty (vozidel/km)
+  float track_length_km = config->getTrackLength()/1000.0;
+  float density = float(cars_count) / track_length_km;
+  world->logDensity(density);
+
+  // vypocet obsazenosti vozovky (% obsazenych bunek)
+  Cell * tmp_cell = first_cell;
+  int occupied = 0;
+  for (int i = 0; i < length; ++i) {
+    if (tmp_cell->isOccupied()) {
+      occupied++;
+    }
+    tmp_cell = tmp_cell->getCellFront();
+  }
+  float occupancy = float(occupied) / float(length);
+  world->logOccupancy(occupancy);
+
   // if (harmean_speed) { harmean_speed = cars_count / harmean_speed; }
   world->logMeanSpeed(mean_speed);
 }

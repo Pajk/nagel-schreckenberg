@@ -14,9 +14,9 @@ migration_number = 5
 number_of_offspring = 2
 
 population_size = 50
-mutation_probability = 0.001
+mutation_probability = 0.01
 crossover_probability = 0.9
-score_filename = results/7test.generations
+score_filename = results/8test.generations
 score_frequency = 1
 flush_frequency = 1
 
@@ -62,7 +62,7 @@ test_file = data/prague/evropska_21_22.csv
 
 track_length = 5350
 
-slow_to_stop = 0
+slow_to_stop = 1
 slow_to_start_probability = 0.5
 
 true_slowdown = 1

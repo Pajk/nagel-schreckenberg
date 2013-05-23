@@ -32,6 +32,7 @@ struct Summary {
   float slower_mae;
   float mean_travel_time;
   float mean_expected_travel_time;
+  float occupancy;
 };
 
 class Statistics {
@@ -46,6 +47,10 @@ class Statistics {
   // citac poctu kroku simulace, ve kterem byla obsazena jedna vybrana bunka
   // z teto hodnoty se pak vypocita hustota dopravy
   long cell_time_occupied;
+
+  float occupancy;
+
+  float density;
 
   // zde se postupne v kazdem kroku pricita sledovana prumerna rychlost na vozovce
   // z teto hodnoty je pak vypocitana prumerna rychlost v casovem useku
@@ -98,6 +103,8 @@ class Statistics {
 
     void logCellOccupancy(bool occupied);
     void logMeanSpeed(float mean_speed);
+    void logOccupancy(float occupancy);
+    void logDensity(float density);
 
     struct Summary getIntervalData() { return interval_data; }
     struct Summary getSummaryData() { return summary_data; }

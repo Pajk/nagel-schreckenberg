@@ -5,13 +5,13 @@
 #include <map>
 
 // Nastaveni poctu bitu jednotlivych konfiguraci
-#define BITS_CELL_LENGTH 4
+#define BITS_CELL_LENGTH 6
 
-#define BITS_CAR_LENGTH 4
-#define BITS_MAX_SPEED 5
+#define BITS_CAR_LENGTH 6
+#define BITS_MAX_SPEED 6
 #define BITS_MIN_SPEED 4
-#define BITS_SLOWDOWN_P 7
-#define BITS_ACC_P 7
+#define BITS_SLOWDOWN_P 5
+#define BITS_ACC_P 5
 
 // pocet bitu potrebny pro ulozeni konfigurace trate
 #define BITS_TRACK (BITS_CELL_LENGTH)
@@ -20,19 +20,19 @@
 
 // krajni hodnoty jednotlivych nastaveni
 #define CELL_LENGTH_L 0.3
-#define CELL_LENGTH_R 15
+#define CELL_LENGTH_R 16.0
 
 #define CAR_LENGTH_L 5
 #define CAR_LENGTH_R 20
 
-#define MAX_SPEED_L 10
+#define MAX_SPEED_L 20
 #define MAX_SPEED_R 70
 
 #define MIN_SPEED_L 0
 #define MIN_SPEED_R 10
 
 #define SLOWDOWN_L 0.0
-#define SLOWDOWN_R 0.5
+#define SLOWDOWN_R 0.6
 
 #define ACC_L 0.3
 #define ACC_R 1.0

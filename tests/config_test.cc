@@ -171,7 +171,7 @@ TEST (ConfigTest, LoadFromGABinaryStringMaxValues) {
     float site_length = CELL_LENGTH_R;
     config.setTrackLength(track_length);
 
-    EXPECT_EQ (site_length, config.getSiteLength());
+    EXPECT_EQ (int(site_length), int(config.getSiteLength()));
     EXPECT_EQ (track_length, config.getTrackLength());
     EXPECT_EQ (default_car, config.getDefaultCar());
     EXPECT_EQ (int(track_length/site_length), config.getNumberOfTrackCells());
@@ -193,6 +193,119 @@ TEST (ConfigTest, LoadFromGABinaryStringMaxValues) {
 
     EXPECT_EQ (car_types-1, config.getCarConfig(car_types-1).car_class);
 }
+
+// TEST (ConfigTest, LoadFromGABinaryStringAll) {
+
+//     int car_types = 1;
+//     int default_car = 0;
+//     int genome_length = BITS_TRACK + car_types * BITS_CAR;
+
+
+//     GA1DBinaryStringGenome genome(genome_length);
+
+//     // HODNOTA                     POCET BITU           POPIS + INTERVAL
+//     for (int i = 0; i < genome_length; ++i) {
+//         genome.gene(i, 0);
+//     }
+
+//     // NASTAVENI TRATE             celkem BITS_TRACK
+//     // cell_length                 BITS_CELL_LENGTH     Delka bunky <1, 10>
+//     int i = 0;
+//     double max = pow(2.0, double(BITS_CELL_LENGTH));
+//     cout << "== cell_length: " << BITS_CELL_LENGTH << " bits, max: " << max << endl;
+//     for (int n = 0; n < max; ++n) {
+//         for (int j = 0; j <= BITS_CELL_LENGTH; ++j) {
+//             genome.gene(i + j, n & 1<<j);
+//         }
+
+//         // for (int k = 0; k <= BITS_CELL_LENGTH; ++k) {
+//         //     cout << genome.gene(k);
+//         // }
+
+//         Config config;
+//         config.loadFromGABinaryString(genome, default_car);
+//         cout << config.getSiteLength() << endl;
+//     }
+//     i += BITS_CELL_LENGTH;
+
+//     for (int i = 0; i < genome_length; ++i) {
+//         genome.gene(i, 0);
+//     }
+//     // NASTAVENI AUTA              celkem BITS_CAR
+//     // car_length                  BITS_CAR_LENGTH            Delka vozidla <5, 20>
+//     max = pow(2.0, double(BITS_CAR_LENGTH));
+//     cout << "== car_length: " << BITS_CAR_LENGTH << " bits, max: " << max << endl;
+//     for (int n = 0; n < max; ++n) {
+//         for (int j = 0; j <= BITS_CAR_LENGTH; ++j) {
+//             genome.gene(j+i, n & 1<<(j));
+//         }
+
+//         Config config;
+//         config.loadFromGABinaryString(genome, default_car);
+//         CarConfig cc = config.getCarConfig(default_car);
+//         cout << cc.length << endl;
+//     }
+//     i += BITS_CAR_LENGTH;
+
+//     // max_speed                   BITS_MAX_SPEED            Maximalni rychlost vozidla <20, 60>
+//     max = pow(2.0, double(BITS_MAX_SPEED));
+//     cout << "== max_speed: " << BITS_MAX_SPEED << " bits, max: " << max << endl;
+//     for (int n = 0; n < max; ++n) {
+//         for (int j = 0; j <= BITS_MAX_SPEED; ++j) {
+//             genome.gene(i + j, n & 1<<j);
+//         }
+
+//         Config config;
+//         config.loadFromGABinaryString(genome, default_car);
+//         CarConfig cc = config.getCarConfig(default_car);
+//         cout << cc.max_speed << endl;
+//     }
+//     i += BITS_MAX_SPEED;
+
+//     // min_speed                   BITS_MIN_SPEED            Minimalni rychlost vozidla <0, 20>
+//     max = pow(2.0, double(BITS_MIN_SPEED));
+//     cout << "== min_speed: " << BITS_MIN_SPEED << " bits, max: " << max << endl;
+//     for (int n = 0; n < max; ++n) {
+//         for (int j = 0; j <= BITS_MIN_SPEED; ++j) {
+//             genome.gene(i + j, n & 1<<j);
+//         }
+
+//         Config config;
+//         config.loadFromGABinaryString(genome, default_car);
+//         CarConfig cc = config.getCarConfig(default_car);
+//         cout << cc.min_speed << endl;
+//     }
+//     i += BITS_MIN_SPEED;
+
+//     // slowdown_probability        BITS_SLOWDOWN_P            Pravdepodobnost zpomaleni <0, 1>
+//     max = pow(2.0, double(BITS_SLOWDOWN_P));
+//     cout << "== slowdown_probability: " << BITS_SLOWDOWN_P << " bits, max: " << max << endl;
+//     for (int n = 0; n < max; ++n) {
+//         for (int j = 0; j <= BITS_SLOWDOWN_P; ++j) {
+//             genome.gene(i + j, n & 1<<j);
+//         }
+
+//         Config config;
+//         config.loadFromGABinaryString(genome, default_car);
+//         CarConfig cc = config.getCarConfig(default_car);
+//         cout << cc.slowdown_probability << endl;
+//     }
+//     i += BITS_SLOWDOWN_P;
+
+//     // acceleration_probability    BITS_ACC_P            Pravdepodobnost zrychleni <0, 1>
+//     max = pow(2.0, double(BITS_ACC_P));
+//     cout << "== acceleration_probability: " << BITS_ACC_P << " bits, max: " << max << endl;
+//     for (int n = 0; n < max; ++n) {
+//         for (int j = 0; j <= BITS_ACC_P; ++j) {
+//             genome.gene(i + j, n & 1<<j);
+//         }
+
+//         Config config;
+//         config.loadFromGABinaryString(genome, default_car);
+//         CarConfig cc = config.getCarConfig(default_car);
+//         cout << cc.acceleration_probability << endl;
+//     }
+// }
 
 TEST (ConfigTest, LoadFromGABinaryStringMinValues) {
 

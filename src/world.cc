@@ -51,8 +51,7 @@ void World::moveCars() {
   sim_time++;
 
   // v kazdem kroku se kontroluje jedna bunka vozovky (v polovine trasy)
-  // a inkrementuje se citac, pokud je obsazena - tato hodnota se pote pouzije
-  // na vypocet hustoty dopravy
+  // a inkrementuje se citac, pokud je obsazena
   statistics->logCellOccupancy(track->getMiddleCell()->isOccupied());
 
   // vypocet toku a hustoty pro ubehly interval o nastavene delce
@@ -111,3 +110,10 @@ void World::logMeanSpeed(float mean_speed) {
   statistics->logMeanSpeed(mean_speed);
 }
 
+void World::logOccupancy(float occupancy) {
+  statistics->logOccupancy(occupancy);
+}
+
+void World::logDensity(float density) {
+  statistics->logDensity(density);
+}

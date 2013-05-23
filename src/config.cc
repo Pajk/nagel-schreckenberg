@@ -97,6 +97,7 @@ int Config::loadFromFile(const char *filename) {
           car_config.max_speed = roundf(float(car_config.max_speed) / 3.6 / site_length);
           car_config.min_speed = roundf(float(car_config.min_speed) / 3.6 / site_length);
           car_config.length = roundf(float(car_config.length) / site_length);
+          if (car_config.length == 0) car_config.length = 1;
 
           // auto musi mit moznost se pohybovat
           if (car_config.max_speed == 0) car_config.max_speed = 1;
@@ -198,6 +199,7 @@ void Config::loadFromInteger(int binary_integer) {
     }
   }
   car_config.length = roundf(float(5 + tmp)/site_length);
+  if (car_config.length == 0) car_config.length = 1;
 
   // 17-14  max_speed                   4            Maximalni rychlost vozidla <20, 60>
 
@@ -269,7 +271,10 @@ void Config::loadFromGABinaryString(GABinaryString& str, int default_car) {
       tmp |= str.bit(position) << i;
     }
     unit = (CAR_LENGTH_R-CAR_LENGTH_L)/(pow(2.0,BITS_CAR_LENGTH)-1);
+    // cout << unit << " " << (CAR_LENGTH_L + float(tmp) * unit)/site_length << " ";
     car_config.length = roundf((CAR_LENGTH_L + float(tmp) * unit)/site_length);
+    // cout << car_config.length << endl;
+    if (car_config.length == 0) car_config.length = 1;
 
     /**
      * max_speed    BITS_MAX_SPEED    Maximalni rychlost vozidla <MAX_SPEED_L, MAX_SPEED_R>

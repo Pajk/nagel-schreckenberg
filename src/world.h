@@ -89,6 +89,8 @@ class World {
      * kroku simulace
      */
     void logMeanSpeed(float mean_speed);
+    void logOccupancy(float occupancy);
+    void logDensity(float density);
 };
 
 #endif

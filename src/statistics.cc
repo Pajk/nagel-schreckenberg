@@ -28,6 +28,8 @@ void Statistics::reset(long time_from) {
 
     this->time_from = time_from;
     cell_time_occupied = 0;
+    occupancy = 0;
+    density = 0;
     mean_speed = 0;
     car_times.clear();
     memset(&interval_data, 0, sizeof(interval_data));
@@ -74,15 +76,23 @@ void Statistics::calculate(long time_to) {
                 interval_data.faster_mae += abs_err;
             }
 
-            interval_data.mean_travel_time += ct.total_time;
             interval_data.mean_expected_travel_time += ct.expected_time;
 
             interval_data.mae += abs_err;
             interval_data.mape += float(abs_err) / ct.expected_time;
             interval_data.rmse += pow(abs_err, 2);
         }
+        interval_data.mean_travel_time += ct.total_time;
     }
+
+    long interval = interval_data.t_to - interval_data.t_from;
     interval_data.cars = car_times.size();
+
+    // vypocet prumerne obsazenosti (% obsazenych bunek)
+    interval_data.occupancy = occupancy / float(interval);
+
+    // vypocet hustoty dopravy (vozidel / km)
+    interval_data.density = density / float(interval);
 
     // vypocet prumerne chyby
     if (interval_data.cars > 0) {
@@ -94,20 +104,18 @@ void Statistics::calculate(long time_to) {
         interval_data.mae /= cars;
         interval_data.rmse = sqrt(interval_data.rmse/cars);
 
-        // vypocet dopravni toku pro dany casovy interval
-        long interval = interval_data.t_to - interval_data.t_from;
+        // vypocet dopravni toku pro dany casovy interval (vozidel/h)
         interval_data.flow = float(interval_data.cars) / (interval / 3600.0);
 
         // vypocet prumerne rychlosti (km/h)
         interval_data.mean_speed = (config->getTrackLength() / 1000.0)
             / (interval_data.mean_travel_time / 3600);
 
-        // vypocet hustoty dopravy
-        if (interval_data.mean_speed > 0) {
-            interval_data.density =  interval_data.flow / interval_data.mean_speed;
-        } else {
-            interval_data.density = 0;
-        }
+        // if (interval_data.mean_speed > 0) {
+        //     interval_data.density =  interval_data.flow / interval_data.mean_speed;
+        // } else {
+        //     interval_data.density = 0;
+        // }
     }
 
     if (interval_data.slower_cars > 0) {
@@ -139,7 +147,8 @@ void Statistics::print() {
              << setw(8) << setprecision(3) << interval_data.density << ','
              << setw(5) << interval_data.cars << ','
              << setw(7) << setprecision(2) << interval_data.mean_speed << ','
-             << setw(7) << setprecision(2) << interval_data.mean_travel_time << endl;
+             << setw(7) << setprecision(2) << interval_data.mean_travel_time << ','
+             << setw(10) << setprecision(2) << interval_data.occupancy << endl;
 
              // <<  << fixed << setprecision(2) << loop.price / 100.0
     } else {
@@ -164,6 +173,14 @@ void Statistics::logCellOccupancy(bool occupied) {
     if (occupied) {
         cell_time_occupied++;
     }
+}
+
+void Statistics::logOccupancy(float occupancy) {
+    this->occupancy += occupancy;
+}
+
+void Statistics::logDensity(float density) {
+    this->density += density;
 }
 
 void Statistics::logMeanSpeed(float mean_speed) {
@@ -224,7 +241,7 @@ void Statistics::summaryPrint() {
     bool stmp = suppress_output;
     interval_data = summary_data;
     if (!suppress_output) {
-        cout << "========================================================================\n";
+        cout << "==================================================================================\n";
     }
     suppress_output = false;
     print();
@@ -239,5 +256,5 @@ void Statistics::summaryReset() {
 }
 
 void Statistics::printHeader() {
-    cout << " t_from,   t_to,     MAE,    MAPE,   flow, density, cars,  speed,   time\n";
+    cout << " t_from,   t_to,     MAE,    MAPE,   flow, density, cars,  speed,   time, occupancy\n";
 }

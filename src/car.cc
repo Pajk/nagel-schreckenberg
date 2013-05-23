@@ -88,6 +88,7 @@ void Car::slowToStopStep() {
   int free_cells = getFreeCellsCount(max_speed * 2);
   bool speed_modified = false;
   bool slow_start_applied = false;
+  bool accelerated = false;
 
   // ziskani rychlosti predchoziho auta, pokud zadne neni v dohlednu, vrati -1
   int v_next = getCarAheadSpeed(free_cells);
@@ -151,6 +152,7 @@ void Car::slowToStopStep() {
     if (speed_modified == false) {
       if (current_speed < max_speed && free_cells > current_speed) {
         current_speed++;
+        accelerated = true;
       }
     }
     #ifdef DEBUG_STS
@@ -161,6 +163,7 @@ void Car::slowToStopStep() {
      */
     if (double(rand())/RAND_MAX <= slowdown_probability && current_speed > 0) {
       current_speed--;
+      if(config->getTrueSlowdown() && accelerated && current_speed > 0) current_speed--;
     }
     #ifdef DEBUG_STS
       cout << current_speed;

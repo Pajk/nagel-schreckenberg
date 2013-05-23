@@ -1,0 +1,57 @@
+# konfigurace pro ziskani dat k vytvoreni fundamentalniho  modelu
+car_factory = 2
+ncf_mean = 200
+ncf_deviation = 100
+scf_interval = 600
+periodic_boundary = 1
+site_length = 11.76
+track_length = 10000
+# number of track sites = 454
+default_car = 0
+table_format = 1
+stats_frequency = 15
+slow_to_stop = 0
+slow_to_start_probability = 0.50
+true_slowdown = 1
+car 0
+  slowdown_probability = 0.0193548
+  acceleration_probability = 0.977419
+  max_speed = 42.3486 (1 cell/s)
+  min_speed = 0 (0 cell/s)
+  length = 11.7635 (1 cells)
+endcar
+car 1
+  slowdown_probability = 0.232258
+  acceleration_probability = 0.435484
+  max_speed = 84.6971 (2 cell/s)
+  min_speed = 0 (0 cell/s)
+  length = 23.527 (2 cells)
+endcar
+car 2
+  slowdown_probability = 0.135484
+  acceleration_probability = 0.774194
+  max_speed = 42.3486 (1 cell/s)
+  min_speed = 0 (0 cell/s)
+  length = 11.7635 (1 cells)
+endcar
+car 3
+  slowdown_probability = 0.174194
+  acceleration_probability = 0.367742
+  max_speed = 42.3486 (1 cell/s)
+  min_speed = 0 (0 cell/s)
+  length = 11.7635 (1 cells)
+endcar
+car 4
+  slowdown_probability = 0.0193548
+  acceleration_probability = 0.841936
+  max_speed = 42.3486 (1 cell/s)
+  min_speed = 0 (0 cell/s)
+  length = 11.7635 (1 cells)
+endcar
+car 5
+  slowdown_probability = 0.193548
+  acceleration_probability = 0.796774
+  max_speed = 42.3486 (1 cell/s)
+  min_speed = 0 (0 cell/s)
+  length = 11.7635 (1 cells)
+endcar
